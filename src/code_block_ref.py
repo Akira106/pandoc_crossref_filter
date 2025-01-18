@@ -28,8 +28,6 @@ class CodeBlockRef():
         """
         # 画像の保存先
         self.save_dir: str = config.get("save_dir", "assets")
-        if not os.path.exists(self.save_dir):
-            os.makedirs(self.save_dir, exist_ok=True)
 
         # PlantUMLの設定
         self.puml_jar_path: str = config.get("plantuml_jar_path")
@@ -178,6 +176,10 @@ class CodeBlockRef():
         # PlantUMLがなければ終了
         if len(self.list_puml) == 0:
             return
+
+        # ディレクトリが無ければ作成
+        if not os.path.exists(self.save_dir):
+            os.makedirs(self.save_dir, exist_ok=True)
 
         # .pumlの拡張子で一旦出力する
         list_puml_filename = []
