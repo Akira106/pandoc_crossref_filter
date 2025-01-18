@@ -4,7 +4,7 @@ import re
 
 import panflute as pf
 
-import crossref_utils
+from . import crossref_utils
 
 
 logger = crossref_utils.get_logger()

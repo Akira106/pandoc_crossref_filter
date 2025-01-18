@@ -7,10 +7,10 @@ from typing import List, Tuple, Dict
 
 import panflute as pf
 
-import crossref_utils
-from section_cross_ref import SectionCrossRef
-from image_cross_ref import ImageCrossRef
-from table_cross_ref import TableCrossRef
+from . import crossref_utils
+from .section_cross_ref import SectionCrossRef
+from .image_cross_ref import ImageCrossRef
+from .table_cross_ref import TableCrossRef
 
 
 logger = crossref_utils.get_logger()

@@ -1,11 +1,11 @@
 import panflute as pf
 
-import const
-import crossref_utils
-from section_cross_ref import SectionCrossRef
-from image_cross_ref import ImageCrossRef
-from table_cross_ref import TableCrossRef
-from code_block_ref import CodeBlockRef
+from . import const
+from . import crossref_utils
+from .section_cross_ref import SectionCrossRef
+from .image_cross_ref import ImageCrossRef
+from .table_cross_ref import TableCrossRef
+from .code_block_ref import CodeBlockRef
 
 
 logger = crossref_utils.get_logger()

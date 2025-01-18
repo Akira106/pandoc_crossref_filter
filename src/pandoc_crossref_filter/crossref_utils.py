@@ -1,9 +1,9 @@
 import logging
 import sys
 
-import const
-
 import panflute as pf
+
+from . import const
 
 
 def set_logger(log_level):

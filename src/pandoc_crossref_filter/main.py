@@ -4,16 +4,20 @@ import logging
 
 import panflute as pf
 
-import crossref_utils
-from pandoc_crossref_filter import action, prepare, finalize
+from . import crossref_utils
+from .pandoc_crossref_filter import action, prepare, finalize
 
 
 crossref_utils.set_logger(logging.WARNING)
 logger = crossref_utils.get_logger()
 
 
-if __name__ == "__main__":
+def main():
     try:
         pf.run_filter(action, prepare=prepare, finalize=finalize)
     except Exception as e:
         logger.exception(e)
+
+
+if __name__ == "__main__":
+    main()
