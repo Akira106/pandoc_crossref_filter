@@ -32,7 +32,7 @@ def action(elem, doc):
     """
     各ヘッダーにセクション番号を付与する。
     """
-    # logger.debug("Elem:%s", elem)
+    logger.debug("Elem:%s", elem)
 
     if isinstance(elem, pf.SoftBreak):
         """
@@ -46,6 +46,15 @@ def action(elem, doc):
         ああいい
 
         になってしまうので、入力に従って改行を追加する
+        """
+        return [pf.LineBreak()]
+
+    elif (isinstance(elem, pf.RawInline)
+          and elem.text == "<br>"
+          and elem.format == "html"):
+        """
+        Tableの中で<br>を使うと、
+        workd変換時も改行できるようにする
         """
         return [pf.LineBreak()]
 
