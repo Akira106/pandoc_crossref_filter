@@ -4,6 +4,7 @@ import sys
 import re
 import hashlib
 from typing import List, Tuple, Dict
+import json
 
 import panflute as pf
 
@@ -37,7 +38,7 @@ class CodeBlockRef():
         # PlantUMLで出力するべきコードブロック
         self.list_puml: List[Dict] = []
 
-    def register_code_block(self, elem: pf.CodeBlock) -> None | pf.Figure:
+    def register_code_block(self, elem: pf.CodeBlock) -> None | pf.Figure | List:
         """コードブロックの登録
 
         - コードブロックの参照を抽出して一時保存する
@@ -48,7 +49,7 @@ class CodeBlockRef():
                 コードブロック
 
         Returns:
-            None | pf.Figure:
+            None | pf.Figure | List:
                 PlantUMLをFigureに置き換えた要素
         """
         # 参照を抽出して一時記憶する
@@ -61,30 +62,46 @@ class CodeBlockRef():
         self.list_replace_target.append(replace_target)
 
         # PlantUMLでなければ終了
-        if self._is_puml(elem.classes) is False:
+        if self._is_puml(elem) is False:
             return
 
-        # 後でPlantUMLに変換する要素を保存しておく
-        url = os.path.join(
-            self.save_dir,
-            elem.attributes.get("filename", self._md5(elem.text) + ".png"))
-        # 拡張子を強制的にpngにする
-        if url.endswith(".png") is False:
-            url += ".png"
-        self.list_puml.append({
-            "filename": url,
-            "elem": elem
-        })
+        # ファイル名、キャプション、IDを取得する
+        filename, caption, identifier = \
+            self._extract_filename_caption_identifier(elem.text)
 
-        # PlantUMLの場合は画像を返す
+        # Markdown Preview Enhancedでプレビューしている場合は、キャプションとIDを追加する
+        if self._is_puml_when_MPE_preview(elem.attributes):
+            # IDが定義されていなければ何もしない
+            if identifier is None:
+                return None
+
+            fig_num = pf.Str("")  # image_cross_refで書き換える
+            caption = pf.Para(fig_num, pf.Space, pf.Str(caption))
+            return [caption, identifier]
+
+        # エキスポート時は画像で返す
         # (上位側でImageCrossRefに登録する)
-        caption = pf.Str(elem.attributes.get("caption", ""))
-        image = pf.Image(caption, url=url)
-        figure = pf.Figure(
-            pf.Plain(image),
-            caption=pf.Caption(pf.Plain(caption)),
-            identifier=elem.identifier)
-        return figure
+        else:
+            # 出力先のディレクトリを追加
+            filename = os.path.join(self.save_dir, filename)
+
+            # 拡張子が無ければpngにする
+            if filename.endswith(".png") is False and \
+               filename.endswith(".svg") is False:
+                filename += ".png"
+
+            self.list_puml.append({
+                "filename": filename,
+                "elem": elem
+            })
+
+            caption = pf.Str(caption)
+            image = pf.Image(caption, url=filename)
+            figure = pf.Figure(
+                pf.Plain(image),
+                caption=pf.Caption(pf.Plain(caption)),
+                identifier=identifier)
+            return figure
 
     def _extract_reference(self, text: str) -> Tuple[str, List[str]]:
         """コードブロックから参照を抽出する関数
@@ -107,6 +124,44 @@ class CodeBlockRef():
         replaced_text = re.sub(pattern, "%s", text)
 
         return replaced_text, matches
+
+    @staticmethod
+    def _extract_filename_caption_identifier(text: str) -> Tuple[str | None,
+                                                                 str,
+                                                                 str | None]:
+        """PlantUMLのCodeBlockの中からファイル名、キャプション、IDを取得する
+
+        PlantUMLのテキスト中に
+        - 'filename=XX
+        - 'caption=YY
+        - '#fig:ZZ'
+        が記載されているとき、XX, YY, fig:ZZを返します。
+
+        Args:
+            text (str):
+                PlantUMLのテキスト
+
+        Returns:
+            str | None: PlantUMLで出力後のファイル名 = XX
+            str: キャプション = YY
+            str | None: ID = fig:ZZ
+        """
+        filename = None
+        caption = ""
+        fig = None
+
+        match_filename = re.search(r"^'filename=(\S+)", text, re.MULTILINE)
+        match_caption = re.search(r"^'caption=(.+)", text, re.MULTILINE)
+        match_fig = re.search(r"^'#(fig:\S+)", text, re.MULTILINE)
+
+        if match_filename:
+            filename = match_filename.group(1).strip("'" + '"')
+        if match_caption:
+            caption = match_caption.group(1).strip("'" + '"')
+        if match_fig:
+            fig = match_fig.group(1)
+
+        return filename, caption, fig
 
     def replace_reference(self,
                           section_cross_ref: SectionCrossRef,
@@ -144,9 +199,32 @@ class CodeBlockRef():
             replace_text["elem"].text = \
                 replace_text["replace_text"] % tuple(list_replace_value)
 
-    @staticmethod
-    def _is_puml(classes: List[str]) -> bool:
+    @classmethod
+    def _is_puml(cls, elem: pf.Element) -> bool:
         """コードブロックがPlantUMLかどうかを判定する
+
+        通常のpandoc、または
+        Markdown Preview Enhancedでexportするときの判定
+
+        Args:
+            elem (pf.Element): Pandocの要素
+
+        Returns:
+            判定結果
+        """
+        if cls._is_puml_when_export(elem.classes):
+            return True
+        if cls._is_puml_when_MPE_preview(elem.attributes):
+            return True
+
+        return False
+
+    @staticmethod
+    def _is_puml_when_export(classes: List[str]) -> bool:
+        """コードブロックがPlantUMLかどうかを判定する
+
+        通常のpandoc、または
+        Markdown Preview Enhancedでexportするときの判定
 
         Args:
             classes (list(str)): 要素のクラス一覧
@@ -159,6 +237,26 @@ class CodeBlockRef():
             "puml"
         ]
         return any([target in classes for target in list_target])
+
+    @staticmethod
+    def _is_puml_when_MPE_preview(attributes: Dict) -> bool:
+        """コードブロックがPlantUMLかどうかを判定する
+
+        Markdown Preview Enhancedでプレビューしている場合は判定方法が変わる
+
+        Args:
+            attributes (Dict): 要素の属性一覧
+
+        Returns:
+            判定結果
+        """
+        data_parsed_info = json.loads(attributes.get("data-parsed-info", "{}"))
+        language = data_parsed_info.get("language")
+        list_target = [
+            "plantuml",
+            "puml"
+        ]
+        return language in list_target
 
     @staticmethod
     def _has_ref(identifier: str) -> bool:

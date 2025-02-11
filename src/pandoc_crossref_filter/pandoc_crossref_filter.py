@@ -72,11 +72,26 @@ def action(elem, doc):
     # コードブロック
     elif isinstance(elem, pf.CodeBlock):
         # コードブロック中の参照を探して一時記憶しておく
-        image = doc.code_block_ref.register_code_block(elem)
-        if image is not None:
-            # コードブロックをイメージ要素に置き換える
+        ret = doc.code_block_ref.register_code_block(elem)
+
+        if ret is None:
+            return
+
+        # コードブロックをイメージ要素に置き換える
+        if isinstance(ret, pf.Figure):
             return doc.image_cross_ref.register_image(
-                image, doc.list_present_section_numbers)
+                ret, doc.list_present_section_numbers)
+
+        # Markdown Preview Enhancedの場合は、図番号をimage_cross_refに管理させる
+        else:
+            caption = ret[0]
+            identifier = ret[1]
+            doc.image_cross_ref.register_external_caption(
+                caption,
+                identifier,
+                doc.list_present_section_numbers
+            )
+            return [elem, caption]
 
     # 画像
     elif isinstance(elem, (pf.Figure, pf.Image)):

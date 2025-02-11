@@ -91,6 +91,32 @@ class ImageCrossRef():
             image = elem
             return [image, pf.Str("\n\n: "), caption]
 
+    def register_external_caption(self,
+                                  caption: pf.Para,
+                                  identifier: str,
+                                  list_present_section_numbers: List) -> None:
+        """外部のキャプションの登録
+
+        Markdown Preview EnhancedでPlantUMLのプレビューを実行するときに使用する
+
+        Args:
+            caption: pf.Para
+                キャプションを表す文章
+            identifier: str:
+                ID
+            list_present_section_numbers: List:
+                セクション番号
+        """
+        # 図番号の取得
+        fig_number = self._get_fig_number(list_present_section_numbers)
+
+        # identifierの登録
+        self._add_image_ref(identifier, fig_number)
+
+        # キャプションに図番号を追加する
+        caption_text = self.prefix + fig_number + self.suffix
+        caption.content[0].text = caption_text
+
     def _add_image_ref(self,
                        identifier: str,
                        fig_number: str) -> None:
