@@ -56,6 +56,8 @@ class TableCrossRef():
 
         # キャプションのテキスト情報と表定義の取得
         caption_text = self._get_caption_text(elem)
+        if caption_text is None:  # キャプションが無ければ何もしない
+            return
         identifier, new_caption_text = self._get_table_identifier(caption_text)
         # 参照が定義されていなければ何もしない
         if identifier is None:
@@ -72,7 +74,7 @@ class TableCrossRef():
             self.prefix + table_number + self.suffix + " " + new_caption_text
         self._set_caption_text(elem, new_caption_text)
 
-    def _get_caption_text(self, elem: pf.Caption) -> str:
+    def _get_caption_text(self, elem: pf.Caption) -> str | None:
         """キャプションのテキスト情報を取得する
 
         Args:
@@ -82,6 +84,10 @@ class TableCrossRef():
         Returns:
             str: テキスト情報
         """
+        # キャプションが無ければ終了
+        if len(elem.content) == 0:
+            return None
+
         caption_text = ""
         for caption_elem in elem.content[0].content:
             if isinstance(caption_elem, pf.Space):
