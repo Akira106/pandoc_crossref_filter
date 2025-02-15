@@ -3,10 +3,10 @@ from typing import List, Dict
 
 import panflute as pf
 
-from . import crossref_utils
+from . import utils
 
 
-logger = crossref_utils.get_logger()
+logger = utils.get_logger()
 
 
 class FigureCrossRef():
@@ -58,7 +58,7 @@ class FigureCrossRef():
             return elem
 
         # DefinitionListがすでに定義されている場合は、記載が重複するのでエラーにする
-        root_elem = crossref_utils.get_root_elem(elem)
+        root_elem = utils.get_root_elem(elem)
         if isinstance(root_elem, pf.DefinitionList):
             logger.error(f"Duplicate definition: '{elem.identifier}'")
             sys.exit(1)

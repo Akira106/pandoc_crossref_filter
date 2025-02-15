@@ -4,10 +4,10 @@ import re
 
 import panflute as pf
 
-from . import crossref_utils
+from . import utils
 
 
-logger = crossref_utils.get_logger()
+logger = utils.get_logger()
 
 
 class TableCrossRef():
@@ -51,7 +51,7 @@ class TableCrossRef():
                 セクション番号
         """
         # Table要素のキャプションでなければ終了
-        if not isinstance(crossref_utils.get_root_elem(elem), pf.Table):
+        if not isinstance(utils.get_root_elem(elem), pf.Table):
             return
 
         # キャプションのテキスト情報と表定義の取得

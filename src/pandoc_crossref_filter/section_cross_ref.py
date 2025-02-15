@@ -3,10 +3,10 @@ from typing import List, Dict
 
 import panflute as pf
 
-from . import crossref_utils
+from . import utils
 
 
-logger = crossref_utils.get_logger()
+logger = utils.get_logger()
 
 
 class SectionCrossRef():

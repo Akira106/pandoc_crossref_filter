@@ -1,29 +1,35 @@
 import panflute as pf
 
-from . import const
-from . import crossref_utils
+from . import utils
 from .section_cross_ref import SectionCrossRef
 from .figure_cross_ref import FigureCrossRef
 from .table_cross_ref import TableCrossRef
 from .code_block_ref import CodeBlockRef
 
 
-logger = crossref_utils.get_logger()
+logger = utils.get_logger()
+
+# configのキー
+CONFIG_ROOT = "pandoc_crossref_filter"
+CONFIG_SECTION = f"{CONFIG_ROOT}.section"
+CONFIG_IMAGE = f"{CONFIG_ROOT}.figure"
+CONFIG_TABLE = f"{CONFIG_ROOT}.table"
+CONFIG_CODE_BLOCK = f"{CONFIG_ROOT}.code_block"
 
 
 def prepare(doc):
     # セクション番号管理
     doc.section_cross_ref = SectionCrossRef(
-        doc.get_metadata(const.CONFIG_SECTION, {}))
+        doc.get_metadata(CONFIG_SECTION, {}))
     # コードブロック管理
     doc.code_block_ref = CodeBlockRef(
-        doc.get_metadata(const.CONFIG_CODE_BLOCK, {}))
+        doc.get_metadata(CONFIG_CODE_BLOCK, {}))
     # 図番号管理
     doc.figure_cross_ref = FigureCrossRef(
-        doc.get_metadata(const.CONFIG_IMAGE, {}))
+        doc.get_metadata(CONFIG_IMAGE, {}))
     # 表番号管理
     doc.table_cross_ref = TableCrossRef(
-        doc.get_metadata(const.CONFIG_TABLE, {}))
+        doc.get_metadata(CONFIG_TABLE, {}))
     # 現在のセクション番号
     doc.list_present_section_numbers = []
 
@@ -112,7 +118,7 @@ def action(elem, doc):
             replace_str = pf.Str("")
             # セクション番号の参照
             if citation.id.startswith("sec:"):
-                root_elem = crossref_utils.get_root_elem(elem)
+                root_elem = utils.get_root_elem(elem)
                 doc.section_cross_ref.add_reference(
                     citation.id,
                     replace_str,

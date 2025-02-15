@@ -4,12 +4,12 @@ import logging
 
 import panflute as pf
 
-from . import crossref_utils
+from . import utils
 from .pandoc_crossref_filter import action, prepare, finalize
 
 
-crossref_utils.set_logger(logging.WARNING)
-logger = crossref_utils.get_logger()
+utils.set_logger(logging.WARNING)
+logger = utils.get_logger()
 
 
 def main():

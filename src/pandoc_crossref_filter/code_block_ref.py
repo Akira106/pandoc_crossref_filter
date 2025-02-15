@@ -1,5 +1,4 @@
 import os
-import subprocess
 import sys
 import re
 import hashlib
@@ -11,14 +10,14 @@ import panflute as pf
 import requests
 import plantuml
 
-from . import crossref_utils
+from . import utils
 from .section_cross_ref import SectionCrossRef
 from .figure_cross_ref import FigureCrossRef
 from .table_cross_ref import TableCrossRef
 from .config import PLANTUML_SERVER_URL
 
 
-logger = crossref_utils.get_logger()
+logger = utils.get_logger()
 
 
 class CodeBlockRef():

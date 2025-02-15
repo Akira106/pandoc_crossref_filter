@@ -3,7 +3,8 @@ import sys
 
 import panflute as pf
 
-from . import const
+# ロガーの名前
+LOGGER_NAME = "crossref"
 
 
 def set_logger(log_level):
@@ -14,13 +15,13 @@ def set_logger(log_level):
     stderr_handler.setLevel(log_level)
     stderr_handler.setFormatter(log_format)
     # 設定の適用
-    logger = logging.getLogger(const.LOGGER_NAME)
+    logger = logging.getLogger(LOGGER_NAME)
     logger.setLevel(log_level)
     logger.addHandler(stderr_handler)
 
 
 def get_logger():
-    return logging.getLogger(const.LOGGER_NAME)
+    return logging.getLogger(LOGGER_NAME)
 
 
 def get_root_elem(elem: pf.Element) -> pf.Element:
