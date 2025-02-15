@@ -23,7 +23,8 @@ class SectionCrossRef():
             config.get("auto_section", False))
         self.start_header_level: int = int(
             config.get("start_header_level", "1"))
-        assert self.start_header_level >= 1
+        if self.start_header_level < 1:
+            self.start_header_level = 1
 
         # 現在のセクション番号
         self.list_present_section_numbers: List[int] = []
@@ -71,7 +72,7 @@ class SectionCrossRef():
         Returns:
             bool: trueの場合、このヘッダーは番号を加算しない
         """
-        if "unnumbered" in classes:
+        if "un" in classes or "unnumbered" in classes:
             return True
         else:
             return False
