@@ -16,8 +16,11 @@ class SectionCrossRef():
         Args:
             config (dict):
                 設定
+                - auto_section: セクション番号を自動付与するかどうか
                 - start_header_level: セクション番号のカウントを開始するヘッダーレベル
         """
+        self.auto_section: bool = bool(
+            config.get("auto_section", False))
         self.start_header_level: int = int(
             config.get("start_header_level", "1"))
         assert self.start_header_level >= 1
@@ -53,7 +56,8 @@ class SectionCrossRef():
         # セクション番号を文字列に変換
         str_section_number = self._get_section_number_str()
         # 元のヘッダー内容の前にセクション番号を追加
-        self._insert_section_numbers(elem.content, str_section_number)
+        if self.auto_section:
+            self._insert_section_numbers(elem.content, str_section_number)
         # セクション参照の追加
         self._add_section_ref(elem.identifier, str_section_number)
 
