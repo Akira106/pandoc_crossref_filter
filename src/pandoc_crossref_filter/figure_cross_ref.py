@@ -21,7 +21,7 @@ class FigureCrossRef():
         # 図番号の連番のカウントをするレベル
         # 例えば1なら章番号ごとにカウントする
         self.figure_number_count_level = int(
-            config.get("figure_number_count_level", "1"))
+            config.get("figure_number_count_level", "0"))
         assert self.figure_number_count_level >= 0
 
         # 参照用のセクション番号を格納する辞書

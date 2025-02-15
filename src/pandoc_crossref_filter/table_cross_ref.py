@@ -22,7 +22,7 @@ class TableCrossRef():
         # 表番号の連番のカウントをするレベル
         # 例えば1なら章番号ごとにカウントする
         self.table_number_count_level = int(
-            config.get("table_number_count_level", "1"))
+            config.get("table_number_count_level", "0"))
         assert self.table_number_count_level >= 0
 
         # 参照用のセクション番号を格納する辞書
