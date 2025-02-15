@@ -3,7 +3,7 @@ import panflute as pf
 from . import const
 from . import crossref_utils
 from .section_cross_ref import SectionCrossRef
-from .image_cross_ref import ImageCrossRef
+from .figure_cross_ref import FigureCrossRef
 from .table_cross_ref import TableCrossRef
 from .code_block_ref import CodeBlockRef
 
@@ -19,7 +19,7 @@ def prepare(doc):
     doc.code_block_ref = CodeBlockRef(
         doc.get_metadata(const.CONFIG_CODE_BLOCK, {}))
     # 図番号管理
-    doc.image_cross_ref = ImageCrossRef(
+    doc.figure_cross_ref = FigureCrossRef(
         doc.get_metadata(const.CONFIG_IMAGE, {}))
     # 表番号管理
     doc.table_cross_ref = TableCrossRef(
@@ -79,14 +79,14 @@ def action(elem, doc):
 
         # コードブロックをイメージ要素に置き換える
         if isinstance(ret, pf.Figure):
-            return doc.image_cross_ref.register_image(
+            return doc.figure_cross_ref.register_image(
                 ret, doc.list_present_section_numbers)
 
-        # Markdown Preview Enhancedの場合は、図番号をimage_cross_refに管理させる
+        # Markdown Preview Enhancedの場合は、図番号をfigure_cross_refに管理させる
         else:
             caption = ret[0]
             identifier = ret[1]
-            doc.image_cross_ref.register_external_caption(
+            doc.figure_cross_ref.register_external_caption(
                 caption,
                 identifier,
                 doc.list_present_section_numbers
@@ -95,7 +95,7 @@ def action(elem, doc):
 
     # 画像
     elif isinstance(elem, (pf.Figure, pf.Image)):
-        image = doc.image_cross_ref.register_image(
+        image = doc.figure_cross_ref.register_image(
             elem, doc.list_present_section_numbers)
         return image
 
@@ -121,7 +121,7 @@ def action(elem, doc):
                 list_ret_elem.append(replace_str)
             # 図番号の参照
             elif citation.id.startswith("fig:"):
-                doc.image_cross_ref.add_reference(
+                doc.figure_cross_ref.add_reference(
                     citation.id,
                     replace_str
                 )
@@ -145,13 +145,13 @@ def finalize(doc):
     # セクション番号の参照を上書きする
     doc.section_cross_ref.replace_reference()
     # 図番号の参照を上書きする
-    doc.image_cross_ref.replace_reference()
+    doc.figure_cross_ref.replace_reference()
     # 表番号の参照を上書きする
     doc.table_cross_ref.replace_reference()
     # コードブロックの参照を上書きする
     doc.code_block_ref.replace_reference(
         doc.section_cross_ref,
-        doc.image_cross_ref,
+        doc.figure_cross_ref,
         doc.table_cross_ref
     )
     # PlantUML画像を出力する

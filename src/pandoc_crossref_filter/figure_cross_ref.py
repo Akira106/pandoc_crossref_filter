@@ -9,20 +9,20 @@ from . import crossref_utils
 logger = crossref_utils.get_logger()
 
 
-class ImageCrossRef():
+class FigureCrossRef():
     def __init__(self, config: Dict) -> None:
         """コンストラクタ
 
         Args:
             config (dict):
                 設定
-                - fig_number_count_level (int): 図番号の連番のカウントをするレベル
+                - figure_number_count_level (int): 図番号の連番のカウントをするレベル
         """
         # 図番号の連番のカウントをするレベル
         # 例えば1なら章番号ごとにカウントする
-        self.fig_number_count_level = int(
-            config.get("fig_number_count_level", "1"))
-        assert self.fig_number_count_level >= 0
+        self.figure_number_count_level = int(
+            config.get("figure_number_count_level", "1"))
+        assert self.figure_number_count_level >= 0
 
         # 参照用のセクション番号を格納する辞書
         self.references: Dict = {}
@@ -148,9 +148,9 @@ class ImageCrossRef():
             str: 図番号を返します。
         """
         # カウントを開始するレベルの調整
-        if len(list_present_section_numbers) > self.fig_number_count_level:
+        if len(list_present_section_numbers) > self.figure_number_count_level:
             list_present_section_numbers = \
-                list_present_section_numbers[:self.fig_number_count_level]
+                list_present_section_numbers[:self.figure_number_count_level]
         # 番号のカウント
         start_number = \
             self.delimiter.join(map(str, list_present_section_numbers))

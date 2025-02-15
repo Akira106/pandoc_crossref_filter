@@ -13,7 +13,7 @@ import plantuml
 
 from . import crossref_utils
 from .section_cross_ref import SectionCrossRef
-from .image_cross_ref import ImageCrossRef
+from .figure_cross_ref import FigureCrossRef
 from .table_cross_ref import TableCrossRef
 from .config import PLANTUML_SERVER_URL
 
@@ -76,12 +76,12 @@ class CodeBlockRef():
             if identifier is None:
                 return None
 
-            fig_num = pf.Str("")  # image_cross_refで書き換える
+            fig_num = pf.Str("")  # figure_cross_refで書き換える
             caption = pf.Para(fig_num, pf.Space, pf.Str(caption))
             return [caption, identifier]
 
         # エキスポート時は画像で返す
-        # (上位側でImageCrossRefに登録する)
+        # (上位側でFigureCrossRefに登録する)
         else:
             # 出力先のディレクトリを追加
             filename = os.path.join(self.save_dir, filename)
@@ -166,14 +166,14 @@ class CodeBlockRef():
 
     def replace_reference(self,
                           section_cross_ref: SectionCrossRef,
-                          image_cross_ref: ImageCrossRef,
+                          figure_cross_ref: FigureCrossRef,
                           table_cross_ref: TableCrossRef) -> None:
         """参照を置き換える関数
 
         Args:
             section_cross_ref: SectionCrossRef
                 セクション番号の参照
-            image_cross_ref: ImageCrossRef):
+            figure_cross_ref: FigureCrossRef):
                 図番号の参照
             table_cross_ref: TableCrossRef):
                 表番号の参照
@@ -185,7 +185,7 @@ class CodeBlockRef():
                 if key.startswith("sec:"):
                     reference = section_cross_ref
                 elif key.startswith("fig:"):
-                    reference = image_cross_ref
+                    reference = figure_cross_ref
                 elif key.startswith("tbl:"):
                     reference = table_cross_ref
                 else:
