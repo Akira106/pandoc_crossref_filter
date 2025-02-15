@@ -155,4 +155,4 @@ def finalize(doc):
         doc.table_cross_ref
     )
     # PlantUML画像を出力する
-    doc.code_block_ref.export_puml_image()
+    doc.code_block_ref.export_puml_images()

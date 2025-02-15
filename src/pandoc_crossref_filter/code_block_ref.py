@@ -5,13 +5,17 @@ import re
 import hashlib
 from typing import List, Tuple, Dict
 import json
+import collections
 
 import panflute as pf
+import requests
+import plantuml
 
 from . import crossref_utils
 from .section_cross_ref import SectionCrossRef
 from .image_cross_ref import ImageCrossRef
 from .table_cross_ref import TableCrossRef
+from .config import PLANTUML_SERVER_URL
 
 
 logger = crossref_utils.get_logger()
@@ -29,9 +33,6 @@ class CodeBlockRef():
         """
         # 画像の保存先
         self.save_dir: str = config.get("save_dir", "assets")
-
-        # PlantUMLの設定
-        self.puml_jar_path: str = config.get("plantuml_jar_path")
 
         # 書き換えるべき項目を記憶する(最後に書き換える)
         self.list_replace_target: List[Dict] = []
@@ -85,10 +86,10 @@ class CodeBlockRef():
             # 出力先のディレクトリを追加
             filename = os.path.join(self.save_dir, filename)
 
-            # 拡張子が無ければpngにする
+            # 拡張子が無ければsvgにする
             if filename.endswith(".png") is False and \
                filename.endswith(".svg") is False:
-                filename += ".png"
+                filename += ".svg"
 
             self.list_puml.append({
                 "filename": filename,
@@ -269,7 +270,7 @@ class CodeBlockRef():
         hash_object = hashlib.md5(text.encode())
         return hash_object.hexdigest()
 
-    def export_puml_image(self) -> None:
+    def export_puml_images(self) -> None:
         """PlantUML画像の出力"""
         # PlantUMLがなければ終了
         if len(self.list_puml) == 0:
@@ -279,41 +280,48 @@ class CodeBlockRef():
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir, exist_ok=True)
 
-        # .pumlの拡張子で一旦出力する
-        list_puml_filename = []
+        # 出力ファイルの重複チェック
+        self._assert_no_duplicate_filename(
+            [puml["filename"] for puml in self.list_puml])
+
+        # 画像に変換する
         for puml in self.list_puml:
-            puml_text = puml["elem"].text
-            # @startumlと@endumlを自動で追加する
-            if not puml_text.startswith("@startuml"):
-                puml_text = "@startuml\n" + puml_text
-            if not puml_text.endswith("@enduml"):
-                puml_text += "\n@enduml"
-            # 拡張子の変更
-            # (self.register_code_block内で強制的に.pngにしているので、それを.pumlにする)
-            puml_filename = \
-                puml["filename"].rsplit(".", maxsplit=1)[0] + ".puml"
-            with open(puml_filename, "w") as f:
-                f.write(puml_text)
-            list_puml_filename.append(puml_filename)
+            self._export_puml_image(puml["filename"], puml["elem"].text)
 
-        # PlantUMLで変換する
-        self._export_puml_image_local(list_puml_filename)
-
-        # pumlファイルを削除する
-        for puml_filename in list_puml_filename:
-            if os.path.exists(puml_filename) is True:
-                os.remove(puml_filename)
-
-    def _export_puml_image_local(self,
-                                 list_puml_filename: List[str],
-                                 limit_size: int = 16384) -> None:
-        """ローカルのplantuml.jarで出力する
+    @staticmethod
+    def _assert_no_duplicate_filename(list_filename: List[str]) -> None:
+        """出力ファイル名の重複チェック
 
         Args:
-            list_puml_filename (list(str)): 出力するファイル名のリスト
+            list_filename (str):
+                ファイル名の出力先
         """
-        target_puml = " ".join(list_puml_filename)
-        # ToDo:
-        # - PlantUMLのパスを環境変数などに分離する
-        cmd = f'java -jar {self.puml_jar_path} -DPLANTUML_LIMIT_SIZE={limit_size} -charset UTF-8 {target_puml}'
-        subprocess.check_output(cmd, shell=True)
+        counter = collections.Counter(list_filename)
+        duplicates = [item for item, count in counter.items() if count > 1]
+        if len(duplicates) > 0:
+            for dup in duplicates:
+                logger.error(f"Duplicate filename: {dup}.")
+            sys.exit(1)
+
+    def _export_puml_image(self, filename: str, text: str) -> None:
+        """PlantUMLのテキストを画像に出力する
+
+        Args:
+            filename (str): 出力先の画像ファイル名
+            text (str): PlantUMLのテキスト
+        """
+        fmt = "svg" if filename.endswith(".svg") else "png"
+        encode_text = plantuml.deflate_and_encode(text)
+        url = PLANTUML_SERVER_URL + f"/{fmt}/{encode_text}"
+
+        try:
+            ret = requests.get(url)
+        except Exception:
+            logger.error(f"Failed to connect to {PLANTUML_SERVER_URL}.")
+            sys.exit(1)
+        if ret.status_code != 200:
+            logger.error(f"Failed to export f{filename}.")
+            sys.exit(1)
+
+        with open(filename, "wb") as f:
+            f.write(ret.content)
