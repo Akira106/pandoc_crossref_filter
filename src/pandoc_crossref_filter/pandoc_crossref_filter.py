@@ -47,11 +47,12 @@ def action(elem, doc):
         ああ
         いい
 
-        のような文章の場合、Markdownでは結合されているので
+        のような文章の場合、Markdownでは
 
         ああいい
 
-        になってしまうので、入力に従って改行を追加する
+        のように改行が無くなってしまう。
+        そこで、元の見た目と同じになるように、改行を追加する。
         """
         return [pf.LineBreak()]
 
@@ -60,7 +61,7 @@ def action(elem, doc):
           and elem.format == "html"):
         """
         Tableの中で<br>を使うと、
-        workd変換時も改行できるようにする
+        pandocでwordに変換したときも、表の中で改行できるようにする
         """
         return [pf.LineBreak()]
 
@@ -71,9 +72,6 @@ def action(elem, doc):
         # セクション番号の更新
         doc.list_present_section_numbers = \
             doc.section_cross_ref.get_present_section_numbers()
-        # メタデータの削除(いろんなものが余計に付与されているので消す)
-        elem.classes.clear()
-        elem.identifier = ""
 
     # コードブロック
     elif isinstance(elem, pf.CodeBlock):
