@@ -4,8 +4,7 @@
 
 - Markdownの中で、セクション番号、図番号、表番号の相互参照を実現します。
 - Pandocのカスタムフィルターとして動作します。
-- VSCodeのプラグインである、Markdown Preview
-  Enhancedとの連携が可能です。
+- VSCodeのプラグインである、Markdown Preview Enhancedとの連携が可能です。
 - PlantUMLの図の中にも引用を挿入することができます。
 - 表の中で改行することができます。pandocを使ってMarkdownをWordファイルに変換したときにも、改行が維持されます。
 
@@ -14,6 +13,7 @@
 ### 2.1. 事前に必要なもの
 
 - Pandoc≧3.6.2: <https://github.com/jgm/pandoc/releases>  
+  ※古いバージョンのPandocだと、動作が異なる場合があります。
 - Python3: <https://www.python.org/downloads/>
 
 ### 2.2. インストール
@@ -70,8 +70,9 @@ $ pip3 install .
 
 ### 2.3. Markdown Preview Enhancedのプレビュー画面との連携の設定
 
-Markdown Preview
-Enhancedのプレビュー画面で、本フィルターの機能をプレビューしたい場合は、以下の設定が必要です。
+**※本設定を行うと、プレビュー画面の動作が重くなります。プレビュー画面を常に表示しながら同時に編集したい場合は、本設定を実施しないでください。**
+
+Markdown Preview Enhancedのプレビュー画面で、本フィルターの機能をプレビューしたい場合は、以下の設定が必要です。
 
 | VSCodeの設定項目 | 設定値 |
 |:---|:---|
@@ -82,7 +83,9 @@ Enhancedのプレビュー画面で、本フィルターの機能をプレビュ
 
   
 
-また、PlantUMLを使用する場合は、以下の**いずれか**の設定が必要です。
+### 2.4. Markdown Preview EnhancedのPlantUMLの設定
+
+また、Markdown Preview EnhancedでPlantUMLを使用する場合は、以下の**いずれか**の設定が必要です。
 
 | VSCodeの設定項目 | 設定値 |
 |:---|:---|
@@ -149,8 +152,7 @@ Enhancedを使用する場合、import機能で外部CSVファイルを表とし
 - 出力画像のファイル名：`'filename=ZZZ`
 
 **※1**  
-\`\`\`plantuml\`\`\`という表記でもPandoc単体なら動作しますが、PlantUMLの中で3.2節に示す引用を使用した場合、Markdown
-Preview Enhancedとの連携が正しく動作しなくなります。
+\`\`\`plantuml\`\`\`という表記でもPandoc単体なら動作しますが、PlantUMLの中で3.2節に示す引用を使用した場合、Markdown Preview Enhancedとの連携が正しく動作しなくなります。
 
 `例`
 
@@ -322,15 +324,12 @@ style="text-align: left;">表番号の文字列のテンプレートです。<co
 #### 3.4.3. PlantUML内の相互参照
 
 PlantUMLのコードブロック内で、3.2節の引用を使用することが可能です。  
-ただし、Markdown Preview
-Enhancedとの連携を行う場合は、3.1.4項に記載したように、コードブロックの先頭を`{.plantuml}`で開始する必要があります。
+ただし、Markdown Preview Enhancedとの連携を行う場合は、3.1.4項に記載したように、コードブロックの先頭を`{.plantuml}`で開始する必要があります。
 
 ##### 補足
 
-コードブロックの先頭を`plantuml`で開始した場合、Markdown Preview
-Enhancedの機能でエクスポートを行ったときに、  
-本フィルターが相互参照を解決するよりも先に、Markdown Preview
-EnhancedによってPlantUMLの画像出力が実行されてしまい、相互参照を解決できなくなります。
+コードブロックの先頭を`plantuml`で開始した場合、Markdown Preview Enhancedの機能でエクスポートを行ったときに、  
+本フィルターが相互参照を解決するよりも先に、Markdown Preview EnhancedによってPlantUMLの画像出力が実行されてしまい、相互参照を解決できなくなります。
 
 #### 3.4.4. 表の中の改行
 
@@ -343,14 +342,12 @@ Markdownで改行する場合は、末尾にスペースを2つ付ける必要�
 
 ### 3.5. エクスポート
 
-PandocまたはMarkdown Preview
-Enhancedの機能を使って、相互参照を解決したファイルをエクスポートすることができます。
+PandocまたはMarkdown Preview Enhancedの機能を使って、相互参照を解決したファイルをエクスポートすることができます。
 
 #### 3.5.1. GitHub Flavored Markdown(GFM)への変換
 
 Markdownファイルの先頭に`---`で囲ったブロックを記述します。その中で、以下のようにMarkdown
-Preview
-Enhancedのエクスポート設定を記載することで、エクスポートが可能になります。
+Preview Enhancedのエクスポート設定を記載することで、エクスポートが可能になります。
 
 `例`
 
@@ -373,8 +370,7 @@ Enhancedのエクスポート設定を記載することで、エクスポート
 #### 3.5.2. Wordファイルへの変換
 
 3.5.1項と同様に、`pandoc_args`の設定に本フィルターを追加することで、エクスポートが可能になります。  
-※エクスポート設定の詳細は、Markdown Preview
-Enhancedのマニュアルをご参照ください。
+※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。
 
 `例`
 
