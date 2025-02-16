@@ -27,10 +27,9 @@ class CodeBlockRef():
 
         Args:
             config (dict): config設定
-            - save_dir (str): PlantUMLの出力先
-            - plantuml_jar_path (str): plantuml.jarのパス
+            - save_dir (str):
+                PlantUML画像の出力先
         """
-        # 画像の保存先
         self.save_dir: str = config.get("save_dir", "assets")
 
         # 書き換えるべき項目を記憶する(最後に書き換える)
@@ -83,7 +82,7 @@ class CodeBlockRef():
         # (上位側でFigureCrossRefに登録する)
         else:
             # 出力先のディレクトリを追加
-            filename = os.path.join(self.save_dir, filename)
+            filename = utils.joinpath(self.save_dir, filename)
 
             # 拡張子が無ければsvgにする
             if filename.endswith(".png") is False and \

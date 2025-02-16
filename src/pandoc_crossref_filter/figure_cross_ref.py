@@ -16,31 +16,35 @@ class FigureCrossRef():
         Args:
             config (dict):
                 設定
-                - figure_number_count_level (int): 図番号の連番のカウントをするレベル
+                - figure_number_count_level (int):
+                    図番号の連番のカウントをするレベル
+                    例えば0なら、ドキュメント全体で連番をカウントする
+                    例えば1なら、第一階層である章ごとにカウントする
+                    負の値なら、常に一番深い階層ごとにカウントする
+
+                - figure_title_template (str):
+                    図番号のタイトルのテンプレート
+                - delimiter (str):
+                    図番号の区切り
         """
-        # 図番号の連番のカウントをするレベル
-        # 例えば1なら章番号ごとにカウントする
-        self.figure_number_count_level = int(
+        self.figure_number_count_level: int = int(
             config.get("figure_number_count_level", "0"))
-        assert self.figure_number_count_level >= 0
+        self.figure_title_template: str = \
+            config.get("figure_title_template", "[図%s]")
+        self.delimiter: str = \
+            config.get("delimiter", "-")
 
         # 参照用のセクション番号を格納する辞書
         self.references: Dict = {}
         # 書き換えるべき項目を記憶する(最後に書き換える)
         self.list_replace_target: List[Dict] = []
-        # 図番号のプレフィックス
-        self.prefix = "[図"
-        # 図番号の区切り
-        self.delimiter: str = "-"
-        # 図番号の末尾の区切り文字
-        self.suffix: str = "]"
         # 図番号の連番をカウントする辞書
         self.dict_fig_number_increment: Dict = {}
 
-    def register_image(self,
-                       elem: pf.Image | pf.Figure,
-                       list_present_section_numbers: List
-                       ) -> pf.Element | List[pf.Element]:
+    def register_figure(self,
+                        elem: pf.Image | pf.Figure,
+                        list_present_section_numbers: List
+                        ) -> pf.Element | List[pf.Element]:
         """図番号の登録
 
         Args:
@@ -70,15 +74,13 @@ class FigureCrossRef():
             return elem
 
         # 図番号の取得
-        fig_number = self._get_fig_number(list_present_section_numbers)
+        fig_number = self._get_figure_number(list_present_section_numbers)
 
         # identifierの登録
-        self._add_image_ref(elem.identifier, fig_number)
-        # 不要になったidentifierの削除
-        elem.identifier = ""
+        self._add_figure_identifier(elem.identifier, fig_number)
 
         # キャプションを追加する
-        caption = self.prefix + fig_number + self.suffix
+        caption = self.figure_title_template % fig_number
         if isinstance(elem, pf.Figure):
             caption += " " + elem.caption.content[0].content[0].text
             caption = pf.Definition(pf.Para(pf.Str(caption)))
@@ -108,18 +110,18 @@ class FigureCrossRef():
                 セクション番号
         """
         # 図番号の取得
-        fig_number = self._get_fig_number(list_present_section_numbers)
+        fig_number = self._get_figure_number(list_present_section_numbers)
 
         # identifierの登録
-        self._add_image_ref(identifier, fig_number)
+        self._add_figure_identifier(identifier, fig_number)
 
         # キャプションに図番号を追加する
-        caption_text = self.prefix + fig_number + self.suffix
+        caption_text = self.figure_title_template % fig_number
         caption.content[0].text = caption_text
 
-    def _add_image_ref(self,
-                       identifier: str,
-                       fig_number: str) -> None:
+    def _add_figure_identifier(self,
+                               identifier: str,
+                               fig_number: str) -> None:
         """図参照の追加
 
         Args:
@@ -136,8 +138,8 @@ class FigureCrossRef():
         # 登録
         self.references[identifier] = fig_number
 
-    def _get_fig_number(self,
-                        list_present_section_numbers: List[int]) -> str:
+    def _get_figure_number(self,
+                           list_present_section_numbers: List[int]) -> str:
         """図番号の取得
 
         Args:
@@ -148,7 +150,8 @@ class FigureCrossRef():
             str: 図番号を返します。
         """
         # カウントを開始するレベルの調整
-        if len(list_present_section_numbers) > self.figure_number_count_level:
+        if self.figure_number_count_level >= 0 and \
+           len(list_present_section_numbers) > self.figure_number_count_level:
             list_present_section_numbers = \
                 list_present_section_numbers[:self.figure_number_count_level]
         # 番号のカウント
@@ -202,5 +205,5 @@ class FigureCrossRef():
         if key not in self.references:
             logger.error(f"No such reference: '{key}'.")
             sys.exit(1)
-        fig_number = self.prefix + self.references[key] + self.suffix
+        fig_number = self.figure_title_template % self.references[key]
         return fig_number

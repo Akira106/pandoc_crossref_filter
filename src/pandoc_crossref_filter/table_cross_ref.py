@@ -17,24 +17,27 @@ class TableCrossRef():
         Args:
             config (dict):
                 設定
-                - table_number_count_level (int): 表番号の連番のカウントをするレベル
+                - table_number_count_level (int):
+                    表番号の連番のカウントをするレベル
+                    例えば0なら、ドキュメント全体で連番をカウントする
+                    例えば1なら、第一階層である章ごとにカウントする
+                    負の値なら、常に一番深い階層ごとにカウントする
+                - table_title_template (str):
+                    表番号のタイトルのテンプレート
+                - delimiter (str):
+                    表番号の区切り
         """
-        # 表番号の連番のカウントをするレベル
-        # 例えば1なら章番号ごとにカウントする
         self.table_number_count_level = int(
             config.get("table_number_count_level", "0"))
-        assert self.table_number_count_level >= 0
+        self.table_title_template: str = \
+            config.get("table_title_template", "[表%s]")
+        self.delimiter: str = \
+            config.get("delimiter", "-")
 
         # 参照用のセクション番号を格納する辞書
         self.references: Dict = {}
         # 書き換えるべき項目を記憶する(最後に書き換える)
         self.list_replace_target: List[Dict] = []
-        # 表番号のプレフィックス
-        self.prefix = "[表"
-        # 表番号の区切り
-        self.delimiter: str = "-"
-        # 表番号の末尾の区切り文字
-        self.suffix: str = "]"
         # 表番号の連番をカウントする辞書
         self.dict_table_number_increment: Dict = {}
 
@@ -71,7 +74,7 @@ class TableCrossRef():
 
         # キャプションに表番号を追加する
         new_caption_text = \
-            self.prefix + table_number + self.suffix + " " + new_caption_text
+            self.table_title_template % table_number + " " + new_caption_text
         self._set_caption_text(elem, new_caption_text)
 
     def _get_caption_text(self, elem: pf.Caption) -> str | None:
@@ -154,7 +157,8 @@ class TableCrossRef():
             str: 表番号を返します。
         """
         # カウントを開始するレベルの調整
-        if len(list_present_section_numbers) > self.table_number_count_level:
+        if self.table_number_count_level >= 0 and \
+           len(list_present_section_numbers) > self.table_number_count_level:
             list_present_section_numbers = \
                 list_present_section_numbers[:self.table_number_count_level]
         # 番号のカウント
@@ -219,5 +223,5 @@ class TableCrossRef():
         if key not in self.references:
             logger.error(f"No such reference: '{key}'.")
             sys.exit(1)
-        table_number = self.prefix + self.references[key] + self.suffix
+        table_number = self.table_title_template % self.references[key]
         return table_number

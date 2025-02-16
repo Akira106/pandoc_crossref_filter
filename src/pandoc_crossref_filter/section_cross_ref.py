@@ -16,15 +16,28 @@ class SectionCrossRef():
         Args:
             config (dict):
                 設定
-                - auto_section: セクション番号を自動付与するかどうか
-                - start_header_level: セクション番号のカウントを開始するヘッダーレベル
+                - auto_section (bool):
+                    セクション番号を自動付与するかどうか
+                - start_header_level (int):
+                    セクション番号のカウントを開始するヘッダーレベル
+                - section_title_template (list(str)):
+                    セクション番号のタイトルのテンプレート。レベルに応じて配列で設定できる
+                - delimiter (str):
+                    セクション番号の区切り
+                - section_ref_template (list(str)):
+                    セクション番号の参照のテンプレート。レベルに応じて配列で設定できる
         """
         self.auto_section: bool = bool(
             config.get("auto_section", False))
-        self.start_header_level: int = int(
-            config.get("start_header_level", "1"))
-        if self.start_header_level < 1:
-            self.start_header_level = 1
+        self.start_header_level: int = min(1, int(
+            config.get("start_header_level", "1")))
+        self.section_title_template: List[str] = \
+            config.get("section_title_template", ["%s."])
+        self.delimiter: str = \
+            config.get("delimiter", ".")
+        self.section_ref_template: List[str] = \
+            config.get("section_ref_template", ["第%s章", "%s節", "%s項", "%s目"])
+        logger.error("%sです", self.section_title_template)
 
         # 現在のセクション番号
         self.list_present_section_numbers: List[int] = []
@@ -32,10 +45,6 @@ class SectionCrossRef():
         self.references: Dict = {}
         # 書き換えるべき項目を記憶する(最後に書き換える)
         self.list_replace_target: List[Dict] = []
-        # セクション番号の区切り文字
-        self.delimiter: str = "."
-        # セクション番号の末尾の区切り文字
-        self.suffix: str = ". "
 
     def register_section(self, elem: pf.Header) -> None:
         """セクション番号の登録
@@ -55,12 +64,12 @@ class SectionCrossRef():
         # セクション番号のインクリメント
         self._increment_section_numbers(elem.level)
         # セクション番号を文字列に変換
-        str_section_number = self._get_section_number_str()
+        section_number_str = self._get_section_number_str()
         # 元のヘッダー内容の前にセクション番号を追加
         if self.auto_section:
-            self._insert_section_numbers(elem.content, str_section_number)
+            self._insert_section_numbers(elem.content, section_number_str)
         # セクション参照の追加
-        self._add_section_ref(elem.identifier, str_section_number)
+        self._add_section_identifier(elem.identifier, section_number_str)
 
     def _is_unnumbered(self, classes: List[str]) -> bool:
         """セクション番号を加算しないヘッダーであるか判定する
@@ -108,20 +117,22 @@ class SectionCrossRef():
 
     def _insert_section_numbers(self,
                                 content: pf.containers.ListContainer,
-                                str_section_number: str) -> None:
+                                section_number_str: str) -> None:
         """元のヘッダー内容の前にセクション番号を追加する
         """
-        content.insert(0, pf.Str(str_section_number + self.suffix))
+        section_str = self._get_section_str(
+            section_number_str, self.section_title_template) + " "
+        content.insert(0, pf.Str(section_str))
 
-    def _add_section_ref(self,
-                         identifier: str,
-                         str_section_number: str) -> None:
+    def _add_section_identifier(self,
+                                identifier: str,
+                                section_number_str: str) -> None:
         """セクション参照の追加
 
         Args:
             identifier (str):
                 ヘッダーのID
-            str_section_number (str):
+            section_number_str (str):
                 ヘッダーのセクション番号
         """
         # ヘッダーに"#sec:"が無ければ終了
@@ -134,7 +145,7 @@ class SectionCrossRef():
             sys.exit(1)
 
         # 登録
-        self.references[identifier] = str_section_number
+        self.references[identifier] = section_number_str
 
     def add_reference(self,
                       key: str,
@@ -177,39 +188,34 @@ class SectionCrossRef():
             logger.error(f"No such reference: '{key}'.")
             sys.exit(1)
 
-        str_section_number = self.references[key]
-        suffix = self._get_section_suffix(str_section_number, is_header)
-        return str_section_number + suffix
+        section_number_str = self.references[key]
+        # ヘッダー内の引用なら、セクション番号をそのまま返す
+        if is_header is True:
+            return section_number_str
 
-    def _get_section_suffix(self,
-                            str_section_number: str,
-                            is_header: bool) -> str:
-        """セクション番号のサフィックス
+        return self._get_section_str(
+            section_number_str, self.section_ref_template)
+
+    def _get_section_str(self,
+                         section_number_str: str,
+                         section_template: List[str]) -> str:
+        """セクション番号の文字列を返す
 
         Args:
-            str_section_number (str):
+            section_number_str (str):
                 セクション番号
-            is_header (bool):
-                参照要素がヘッダーの中にあるかどうか
+            section_template (list(str)):
+                セクション文字列のテンプレート
 
         Returns:
-            str:
-                サフィックス
+            str: セクション文字列
         """
-        # ヘッダーならサフィックスはつけない
-        if is_header is True:
-            return ""
-
-        level = str_section_number.count(self.delimiter) + 1
-        if level == 1:
-            suffix = "章"
-        elif level == 2:
-            suffix = "節"
-        elif level == 3:
-            suffix = "項"
-        else:
-            suffix = "目"
-        return suffix
+        level = min(
+            len(section_template) - 1,
+            section_number_str.count(self.delimiter)
+        )
+        logger.error("%sです", section_template[level])
+        return section_template[level] % section_number_str
 
     def get_present_section_numbers(self) -> List[int]:
         """現在のセクション番号を返す

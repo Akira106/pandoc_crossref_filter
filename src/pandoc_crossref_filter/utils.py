@@ -41,3 +41,21 @@ def get_root_elem(elem: pf.Element) -> pf.Element:
             return elem
         else:
             elem = parent
+
+
+def joinpath(path1: str, path2: str) -> str:
+    """パスを結合する
+
+    Args:
+        path1 (str): パス1
+        path2 (str): パス2
+
+    Returns:
+        str: path1/path2を返す
+    """
+    # path.join()だとOSごとに文字が変わってしまうので、直接"/"でjoinする
+    # filename = os.path.join(path1, path2)
+    delimiter = "/"
+    if not path1.endswith(delimiter):
+        path1 += delimiter
+    return path1 + path2

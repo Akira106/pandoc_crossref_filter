@@ -83,7 +83,7 @@ def action(elem, doc):
 
         # コードブロックをイメージ要素に置き換える
         if isinstance(ret, pf.Figure):
-            return doc.figure_cross_ref.register_image(
+            return doc.figure_cross_ref.register_figure(
                 ret, doc.list_present_section_numbers)
 
         # Markdown Preview Enhancedの場合は、図番号をfigure_cross_refに管理させる
@@ -99,7 +99,7 @@ def action(elem, doc):
 
     # 画像
     elif isinstance(elem, (pf.Figure, pf.Image)):
-        image = doc.figure_cross_ref.register_image(
+        image = doc.figure_cross_ref.register_figure(
             elem, doc.list_present_section_numbers)
         return image
 
