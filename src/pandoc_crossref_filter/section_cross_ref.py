@@ -37,7 +37,6 @@ class SectionCrossRef():
             config.get("delimiter", ".")
         self.section_ref_template: List[str] = \
             config.get("section_ref_template", ["第%s章", "%s節", "%s項", "%s目"])
-        logger.error("%sです", self.section_title_template)
 
         # 現在のセクション番号
         self.list_present_section_numbers: List[int] = []
@@ -214,7 +213,6 @@ class SectionCrossRef():
             len(section_template) - 1,
             section_number_str.count(self.delimiter)
         )
-        logger.error("%sです", section_template[level])
         return section_template[level] % section_number_str
 
     def get_present_section_numbers(self) -> List[int]:
