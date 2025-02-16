@@ -78,6 +78,8 @@ Enhancedのプレビュー画面で、本フィルターの機能をプレビュ
 | Markdown-preview-enhanced: Pandoc Arguments  | \[“–filter=pandoc_crossref_filter”\] |
 | Markdown-preview-enhanced: Use Pandoc Parser | チェックをつける                     |
 
+\[表2-1\] Markdown Preview Enhancedのプレビュー機能との連携の設定
+
   
 
 また、PlantUMLを使用する場合は、以下の**いずれか**の設定が必要です。
@@ -86,6 +88,8 @@ Enhancedのプレビュー画面で、本フィルターの機能をプレビュ
 |:---------------------------------------------|:---------------------------------------------------------------|
 | Markdown-preview-enhanced: Plantuml Jar Path | PlantUMLの.jarファイルをダウンロードして、そのパスを設定する。 |
 | Markdown-preview-enhanced: Plantuml Server   | `PlantUMLサーバーのURL`/svg                                    |
+
+\[表2-2\] Markdown Preview EnhancedのPlantUMLの設定
 
 ## 3. 使い方
 
@@ -137,7 +141,7 @@ Enhancedを使用する場合、import機能で外部CSVファイルを表とし
 
 #### 3.1.4. PlantUMLへの図番号の挿入
 
-1.  \`\`\`{.plantuml}\`\`\`というコードブロックで開始します。**※1**
+1.  \`\`\`{.plantuml}\`\`\`というコードブロックを使用します。**※1**
 2.  PlantUMLのコードブロックの中に以下のコメントを記載することで、図番号の挿入、キャプション、出力画像ファイル名の設定を行います。
 
 - 図番号の挿入：`'#fig:XXX`
@@ -162,12 +166,15 @@ Preview Enhancedとの連携が正しく動作しなくなります。
 
 セクション番号、図番号、表番号を、それぞれ
 
-- $$@sec:XXX$$
-- $$@fig:XXX$$
-- $$@tbl:XXX$$
+- `[@sec:XXX]`
+- `[@fig:XXX]`
+- `[@tbl:XXX]`
 
 で引用することができます。  
 (`XXX`は、3.1節で挿入したものに対応します)
+
+引用は、本文、箇条書き、表、ヘッダー(3.4.2項)
+、コードブロックの中(PlantUMLの図の中、3.4.3項)で使用することができます。
 
 ### 3.3. 設定値
 
@@ -191,16 +198,16 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 |:-----------------------|:----------------|:-------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | auto_section           | boolean         | false                                | ヘッダーの先頭に、自動でセクション番号を追加します。                                                                                                                                                       |
 | start_header_level     | integer         | 1                                    | セクション番号のカウントを開始するヘッダーのレベルを設定します。例えば2を設定した場合、ヘッダー1はセクション番号のカウントに含まれなくなります。                                                           |
-| section_title_template | array$$string$$ | $$"%s."$$                            | ヘッダーの先頭に挿入されるセクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。 |
+| section_title_template | array\[string\] | \[“%s.”\]                            | ヘッダーの先頭に挿入されるセクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。 |
 | delimiter              | string          | “.”                                  | セクション番号の数字の区切り文字です。                                                                                                                                                                     |
-| section_ref_template   | array$$string$$ | $$"第%s章", "%s節", "%s項", "%s目"$$ | 参照を引用したときの、セクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。     |
+| section_ref_template   | array\[string\] | \[“第%s章”, “%s節”, “%s項”, “%s目”\] | 参照を引用したときの、セクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。     |
 
-\[表1\] セクション番号の設定項目
+\[表3-1\] セクション番号の設定項目
 
 - `figure`の設定値
 
 <table>
-<caption>[表2] 図番号の設定項目</caption>
+<caption>[表3-2] 図番号の設定項目</caption>
 <colgroup>
 <col style="width: 25%" />
 <col style="width: 25%" />
@@ -230,8 +237,7 @@ style="text-align: left;">図番号の連番をカウントするヘッダーの
 <tr class="even">
 <td style="text-align: left;">figure_title_template</td>
 <td style="text-align: left;">string</td>
-<td style="text-align: left;">“<span
-class="math display"><em>図</em></span>”</td>
+<td style="text-align: left;">“[図%s]”</td>
 <td
 style="text-align: left;">図番号の文字列のテンプレートです。<code>%s</code>の中に実際の図番号が挿入されます。</td>
 </tr>
@@ -244,12 +250,12 @@ style="text-align: left;">図番号の文字列のテンプレートです。<co
 </tbody>
 </table>
 
-\[表2\] 図番号の設定項目
+\[表3-2\] 図番号の設定項目
 
 - `table`の設定値
 
 <table>
-<caption>[表3] 表番号の設定項目</caption>
+<caption>[表3-3] 表番号の設定項目</caption>
 <colgroup>
 <col style="width: 25%" />
 <col style="width: 25%" />
@@ -279,8 +285,7 @@ style="text-align: left;">表番号の連番をカウントするヘッダーの
 <tr class="even">
 <td style="text-align: left;">table_title_template</td>
 <td style="text-align: left;">string</td>
-<td style="text-align: left;">“<span
-class="math display"><em>表</em></span>”</td>
+<td style="text-align: left;">“[表%s]”</td>
 <td
 style="text-align: left;">表番号の文字列のテンプレートです。<code>%s</code>の中に実際の表番号が挿入されます。</td>
 </tr>
@@ -293,7 +298,7 @@ style="text-align: left;">表番号の文字列のテンプレートです。<co
 </tbody>
 </table>
 
-\[表3\] 表番号の設定項目
+\[表3-3\] 表番号の設定項目
 
 - `code_block`の設定値
 
@@ -301,7 +306,7 @@ style="text-align: left;">表番号の文字列のテンプレートです。<co
 |:---------|:-------|:-------------|:---------------------------------------------------------------|
 | save_dir | string | “assets”     | PlantUMLを画像出力したときの、出力先のディレクトリのパスです。 |
 
-\[表4\] コードブロックの設定項目
+\[表3-4\] コードブロックの設定項目
 
 ### 3.4. その他の機能
 
@@ -333,7 +338,7 @@ EnhancedによってPlantUMLの画像出力が実行されてしまい、相互�
 
 #### 3.4.4. 表の中の改行
 
-表の中で、`\<br\>`を使うことで、改行ができます。Pandocの機能でWordファイルに変換した場合にも、本フィルターを使用することで、Wordファイル内で改行が維持されます。
+表の中で、`<br>`を使うことで、改行ができます。Pandocの機能でWordファイルに変換した場合にも、本フィルターを使用することで、Wordファイル内で改行が維持されます。
 
 #### 3.4.5. SoftBreakの改行変換
 

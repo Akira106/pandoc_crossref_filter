@@ -7,6 +7,8 @@ pandoc_crossref_filter:
   section:
     auto_section: true
     start_header_level: 2
+  table:
+    table_number_count_level: 1
 ---
 
 # Pandoc crossref filter
@@ -87,6 +89,7 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 |:---|:---|
 |Markdown-preview-enhanced: Pandoc Arguments|["--filter=pandoc_crossref_filter"]|
 |Markdown-preview-enhanced: Use Pandoc Parser|チェックをつける|
+: Markdown Preview Enhancedのプレビュー機能との連携の設定{#tbl:tbl_mpe_preview}
 
 <br>
 
@@ -96,6 +99,7 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 |:---|:---|
 |Markdown-preview-enhanced: Plantuml Jar Path|PlantUMLの.jarファイルをダウンロードして、そのパスを設定する。|
 |Markdown-preview-enhanced: Plantuml Server|`PlantUMLサーバーのURL`/svg|
+: Markdown Preview EnhancedのPlantUMLの設定{#tbl:tbl_mpe_plantuml}
 
 ## 使い方
 
@@ -156,7 +160,7 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
 
 #### PlantUMLへの図番号の挿入 {#sec:sec_puml_insert}
 
-1. \`\`\`{.plantuml}\`\`\`というコードブロックで開始します。**※1**
+1. \`\`\`{.plantuml}\`\`\`というコードブロックを使用します。**※1**
 2. PlantUMLのコードブロックの中に以下のコメントを記載することで、図番号の挿入、キャプション、出力画像ファイル名の設定を行います。
   - 図番号の挿入：`'#fig:XXX`
   - キャプション：`'caption=YYY`
@@ -180,12 +184,14 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
 
 セクション番号、図番号、表番号を、それぞれ
 
-- \[@sec:XXX\]
-- \[@fig:XXX\]
-- \[@tbl:XXX\]
+- `[@sec:XXX]`
+- `[@fig:XXX]`
+- `[@tbl:XXX]`
 
 で引用することができます。
 (`XXX`は、[@sec:sec_insert]で挿入したものに対応します)
+
+引用は、本文、箇条書き、表、ヘッダー([@sec:sec_cite_in_header]) 、コードブロックの中(PlantUMLの図の中、[@sec:sec_cite_in_puml])で使用することができます。
 
 ### 設定値
 
@@ -211,9 +217,9 @@ pandoc_crossref_filter:
 |:---|:---|:---|:---|
 |auto_section|boolean|false|ヘッダーの先頭に、自動でセクション番号を追加します。|
 |start_header_level|integer|1|セクション番号のカウントを開始するヘッダーのレベルを設定します。例えば2を設定した場合、ヘッダー1はセクション番号のカウントに含まれなくなります。|
-|section_title_template|array\[string\]|\["%s."\]|ヘッダーの先頭に挿入されるセクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。|
+|section_title_template|array[string]|["%s."]|ヘッダーの先頭に挿入されるセクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。|
 |delimiter|string|"."|セクション番号の数字の区切り文字です。|
-|section_ref_template|array\[string\]|\["第%s章", "%s節", "%s項", "%s目"\]|参照を引用したときの、セクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。|
+|section_ref_template|array[string]|["第%s章", "%s節", "%s項", "%s目"]|参照を引用したときの、セクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。|
 : セクション番号の設定項目{#tbl:tbl_config_section}
 
 - `figure`の設定値
@@ -221,7 +227,7 @@ pandoc_crossref_filter:
 |設置値|型|デフォルト値|内容|
 |:---|:---|:---|:---|
 |figure_number_count_level|integer|0|図番号の連番をカウントするヘッダーのレベルです。<br>例：<br>・0を設定：`図X`のように、ドキュメント全体で連番を使用します。<br>・1を設定：`図1-X`のように、章番号ごとに連番をカウントします。<br>・負の値を設定：個別のヘッダーごとに連番をカウントします。|
-|figure_title_template|string|"\[図%s\]"|図番号の文字列のテンプレートです。`%s`の中に実際の図番号が挿入されます。|
+|figure_title_template|string|"[図%s]"|図番号の文字列のテンプレートです。`%s`の中に実際の図番号が挿入されます。|
 |delimiter|string|"-"|図番号の区切り文字です。|
 : 図番号の設定項目{#tbl:tbl_config_figure}
 
@@ -230,7 +236,7 @@ pandoc_crossref_filter:
 |設置値|型|デフォルト値|内容|
 |:---|:---|:---|:---|
 |table_number_count_level|integer|0|表番号の連番をカウントするヘッダーのレベルです。<br>例：<br>・0を設定：`表X`のように、ドキュメント全体で連番を使用します。<br>・1を設定：`表1-X`のように、章番号ごとに連番をカウントします。<br>・負の値を設定：個別のヘッダーごとに連番をカウントします。|
-|table_title_template|string|"\[表%s\]"|表番号の文字列のテンプレートです。`%s`の中に実際の表番号が挿入されます。|
+|table_title_template|string|"[表%s]"|表番号の文字列のテンプレートです。`%s`の中に実際の表番号が挿入されます。|
 |delimiter|string|"-"|表番号の区切り文字です。|
 : 表番号の設定項目{#tbl:tbl_config_table}
 
@@ -253,12 +259,12 @@ pandoc_crossref_filter:
 # このヘッダーはセクション番号のカウントから除外される{.un}
 ```
 
-#### ヘッダー内のセクション番号の引用
+#### ヘッダー内のセクション番号の引用{#sec:sec_cite_in_header}
 
 ヘッダー内で、他のセクション番号を引用することができます。
 例えば、セクション番号のカウントを、途中から数字からアルファベットに変更したい場合など、細かい動作を指定するのに有効です。
 
-#### PlantUML内の相互参照
+#### PlantUML内の相互参照{#sec:sec_cite_in_puml}
 
 PlantUMLのコードブロック内で、[@sec:sec_cite]の引用を使用することが可能です。
 ただし、Markdown Preview Enhancedとの連携を行う場合は、[@sec:sec_puml_insert]に記載したように、コードブロックの先頭を`{.plantuml}`で開始する必要があります。
@@ -270,7 +276,7 @@ PlantUMLのコードブロック内で、[@sec:sec_cite]の引用を使用する
 
 #### 表の中の改行
 
-表の中で、`\<br\>`を使うことで、改行ができます。Pandocの機能でWordファイルに変換した場合にも、本フィルターを使用することで、Wordファイル内で改行が維持されます。
+表の中で、`<br>`を使うことで、改行ができます。Pandocの機能でWordファイルに変換した場合にも、本フィルターを使用することで、Wordファイル内で改行が維持されます。
 
 #### SoftBreakの改行変換
 
