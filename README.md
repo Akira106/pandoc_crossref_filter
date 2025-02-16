@@ -13,7 +13,7 @@
 
 ### 2.1. 事前に必要なもの
 
-- Pandoc: <https://github.com/jgm/pandoc/releases>
+- Pandoc≧3.6.2: <https://github.com/jgm/pandoc/releases>  
 - Python3: <https://www.python.org/downloads/>
 
 ### 2.2. インストール
@@ -73,10 +73,10 @@ $ pip3 install .
 Markdown Preview
 Enhancedのプレビュー画面で、本フィルターの機能をプレビューしたい場合は、以下の設定が必要です。
 
-| VSCodeの設定項目                             | 設定値                               |
-|:---------------------------------------------|:-------------------------------------|
-| Markdown-preview-enhanced: Pandoc Arguments  | \[“–filter=pandoc_crossref_filter”\] |
-| Markdown-preview-enhanced: Use Pandoc Parser | チェックをつける                     |
+| VSCodeの設定項目 | 設定値 |
+|:---|:---|
+| Markdown-preview-enhanced: Pandoc Arguments | \[“–filter=pandoc_crossref_filter”\] |
+| Markdown-preview-enhanced: Use Pandoc Parser | チェックをつける |
 
 \[表2-1\] Markdown Preview Enhancedのプレビュー機能との連携の設定
 
@@ -84,10 +84,10 @@ Enhancedのプレビュー画面で、本フィルターの機能をプレビュ
 
 また、PlantUMLを使用する場合は、以下の**いずれか**の設定が必要です。
 
-| VSCodeの設定項目                             | 設定値                                                         |
-|:---------------------------------------------|:---------------------------------------------------------------|
+| VSCodeの設定項目 | 設定値 |
+|:---|:---|
 | Markdown-preview-enhanced: Plantuml Jar Path | PlantUMLの.jarファイルをダウンロードして、そのパスを設定する。 |
-| Markdown-preview-enhanced: Plantuml Server   | `PlantUMLサーバーのURL`/svg                                    |
+| Markdown-preview-enhanced: Plantuml Server | `PlantUMLサーバーのURL`/svg |
 
 \[表2-2\] Markdown Preview EnhancedのPlantUMLの設定
 
@@ -194,13 +194,13 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
 - `section`の設定値
 
-| 設置値                 | 型              | デフォルト値                         | 内容                                                                                                                                                                                                       |
-|:-----------------------|:----------------|:-------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| auto_section           | boolean         | false                                | ヘッダーの先頭に、自動でセクション番号を追加します。                                                                                                                                                       |
-| start_header_level     | integer         | 1                                    | セクション番号のカウントを開始するヘッダーのレベルを設定します。例えば2を設定した場合、ヘッダー1はセクション番号のカウントに含まれなくなります。                                                           |
-| section_title_template | array\[string\] | \[“%s.”\]                            | ヘッダーの先頭に挿入されるセクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。 |
-| delimiter              | string          | “.”                                  | セクション番号の数字の区切り文字です。                                                                                                                                                                     |
-| section_ref_template   | array\[string\] | \[“第%s章”, “%s節”, “%s項”, “%s目”\] | 参照を引用したときの、セクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。     |
+| 設置値 | 型 | デフォルト値 | 内容 |
+|:---|:---|:---|:---|
+| auto_section | boolean | false | ヘッダーの先頭に、自動でセクション番号を追加します。 |
+| start_header_level | integer | 1 | セクション番号のカウントを開始するヘッダーのレベルを設定します。例えば2を設定した場合、ヘッダー1はセクション番号のカウントに含まれなくなります。 |
+| section_title_template | array\[string\] | \[“%s.”\] | ヘッダーの先頭に挿入されるセクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。 |
+| delimiter | string | “.” | セクション番号の数字の区切り文字です。 |
+| section_ref_template | array\[string\] | \[“第%s章”, “%s節”, “%s項”, “%s目”\] | 参照を引用したときの、セクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。 |
 
 \[表3-1\] セクション番号の設定項目
 
@@ -215,7 +215,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 <col style="width: 25%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">設置値</th>
 <th style="text-align: left;">型</th>
 <th style="text-align: left;">デフォルト値</th>
@@ -223,7 +223,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">figure_number_count_level</td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">0</td>
@@ -234,14 +234,14 @@ style="text-align: left;">図番号の連番をカウントするヘッダーの
 ・1を設定：<code>図1-X</code>のように、章番号ごとに連番をカウントします。<br />
 ・負の値を設定：個別のヘッダーごとに連番をカウントします。</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">figure_title_template</td>
 <td style="text-align: left;">string</td>
 <td style="text-align: left;">“[図%s]”</td>
 <td
 style="text-align: left;">図番号の文字列のテンプレートです。<code>%s</code>の中に実際の図番号が挿入されます。</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">delimiter</td>
 <td style="text-align: left;">string</td>
 <td style="text-align: left;">“-”</td>
@@ -249,8 +249,6 @@ style="text-align: left;">図番号の文字列のテンプレートです。<co
 </tr>
 </tbody>
 </table>
-
-\[表3-2\] 図番号の設定項目
 
 - `table`の設定値
 
@@ -263,7 +261,7 @@ style="text-align: left;">図番号の文字列のテンプレートです。<co
 <col style="width: 25%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">設置値</th>
 <th style="text-align: left;">型</th>
 <th style="text-align: left;">デフォルト値</th>
@@ -271,7 +269,7 @@ style="text-align: left;">図番号の文字列のテンプレートです。<co
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">table_number_count_level</td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">0</td>
@@ -282,14 +280,14 @@ style="text-align: left;">表番号の連番をカウントするヘッダーの
 ・1を設定：<code>表1-X</code>のように、章番号ごとに連番をカウントします。<br />
 ・負の値を設定：個別のヘッダーごとに連番をカウントします。</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">table_title_template</td>
 <td style="text-align: left;">string</td>
 <td style="text-align: left;">“[表%s]”</td>
 <td
 style="text-align: left;">表番号の文字列のテンプレートです。<code>%s</code>の中に実際の表番号が挿入されます。</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">delimiter</td>
 <td style="text-align: left;">string</td>
 <td style="text-align: left;">“-”</td>
@@ -298,13 +296,11 @@ style="text-align: left;">表番号の文字列のテンプレートです。<co
 </tbody>
 </table>
 
-\[表3-3\] 表番号の設定項目
-
 - `code_block`の設定値
 
-| 設置値   | 型     | デフォルト値 | 内容                                                           |
-|:---------|:-------|:-------------|:---------------------------------------------------------------|
-| save_dir | string | “assets”     | PlantUMLを画像出力したときの、出力先のディレクトリのパスです。 |
+| 設置値 | 型 | デフォルト値 | 内容 |
+|:---|:---|:---|:---|
+| save_dir | string | “assets” | PlantUMLを画像出力したときの、出力先のディレクトリのパスです。 |
 
 \[表3-4\] コードブロックの設定項目
 
