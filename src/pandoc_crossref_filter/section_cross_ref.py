@@ -29,7 +29,7 @@ class SectionCrossRef():
         """
         self.auto_section: bool = bool(
             config.get("auto_section", False))
-        self.start_header_level: int = min(1, int(
+        self.start_header_level: int = max(1, int(
             config.get("start_header_level", "1")))
         self.section_title_template: List[str] = \
             config.get("section_title_template", ["%s."])
