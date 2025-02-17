@@ -37,31 +37,29 @@
 <col style="width: 50%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">列A</th>
 <th style="text-align: left;">列B</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">テスト</td>
 <td style="text-align: left;">です</td>
 </tr>
-<tr class="even">
+<tr>
 <td
 style="text-align: left;"><code>&lt;br&gt;</code>を使うと、表の中も改行できます(Word変換にも対応。)</td>
 <td style="text-align: left;">・改行<br />
 ・される<br />
 </td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">表の中でも参照が使えます</td>
 <td style="text-align: left;">第1章, [図2-1]</td>
 </tr>
 </tbody>
 </table>
-
-\[表3-1\] 表番号の参照のサンプルです
 
 ## 4. PlantUMLの相互参照
 
