@@ -14,7 +14,7 @@
 
 - Pandoc≧3.6.2: <https://github.com/jgm/pandoc/releases>  
   ※古いバージョンのPandocだと、動作が異なる場合があります。
-- Python3: <https://www.python.org/downloads/>
+- Python≧3.10: <https://www.python.org/downloads/>
 
 ### 2.2. インストール
 
