@@ -318,7 +318,7 @@ class CodeBlockRef():
             logger.error(f"Failed to connect to {PLANTUML_SERVER_URL}.")
             sys.exit(1)
         if ret.status_code != 200:
-            logger.error(f"Failed to export f{filename}.")
+            logger.error(f"Failed to export {filename}.")
             sys.exit(1)
 
         with open(filename, "wb") as f:
