@@ -65,8 +65,7 @@ $ docker-compose up -d
 $ pip3 install .
 ```
 
-※
-上記の実行時に`XXXXX which is not on PATH.`のようなWarningメッセージが出た場合、環境変数`PATH`に、インストール先のパスを追加してください。
+※ 上記の実行時に`XXXXX which is not on PATH.`のようなWarningメッセージが出た場合、環境変数`PATH`に、インストール先のパスを追加してください。
 
 ### 2.3. Markdown Preview Enhancedのプレビュー画面との連携の設定
 
@@ -134,8 +133,7 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
 ##### 参考
 
-Markdown Previce
-Enhancedを使用する場合、import機能で外部CSVファイルを表として使用するこができます。
+Markdown Previce Enhancedを使用する場合、import機能で外部CSVファイルを表として使用するこができます。
 
 `例`
 
@@ -175,8 +173,7 @@ Enhancedを使用する場合、import機能で外部CSVファイルを表とし
 で引用することができます。  
 (`XXX`は、3.1節で挿入したものに対応します)
 
-引用は、本文、箇条書き、表、ヘッダー(3.4.2項)
-、コードブロックの中(PlantUMLの図の中、3.4.3項)で使用することができます。
+引用は、本文、箇条書き、表、ヘッダー(3.4.2項) 、コードブロックの中(PlantUMLの図の中、3.4.3項)で使用することができます。
 
 ### 3.3. 設定値
 
@@ -229,8 +226,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 <td style="text-align: left;">figure_number_count_level</td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">0</td>
-<td
-style="text-align: left;">図番号の連番をカウントするヘッダーのレベルです。<br />
+<td style="text-align: left;">図番号の連番をカウントするヘッダーのレベルです。<br />
 例：<br />
 ・0を設定：<code>図X</code>のように、ドキュメント全体で連番を使用します。<br />
 ・1を設定：<code>図1-X</code>のように、章番号ごとに連番をカウントします。<br />
@@ -240,8 +236,7 @@ style="text-align: left;">図番号の連番をカウントするヘッダーの
 <td style="text-align: left;">figure_title_template</td>
 <td style="text-align: left;">string</td>
 <td style="text-align: left;">“[図%s]”</td>
-<td
-style="text-align: left;">図番号の文字列のテンプレートです。<code>%s</code>の中に実際の図番号が挿入されます。</td>
+<td style="text-align: left;">図番号の文字列のテンプレートです。<code>%s</code>の中に実際の図番号が挿入されます。</td>
 </tr>
 <tr>
 <td style="text-align: left;">delimiter</td>
@@ -275,8 +270,7 @@ style="text-align: left;">図番号の文字列のテンプレートです。<co
 <td style="text-align: left;">table_number_count_level</td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">0</td>
-<td
-style="text-align: left;">表番号の連番をカウントするヘッダーのレベルです。<br />
+<td style="text-align: left;">表番号の連番をカウントするヘッダーのレベルです。<br />
 例：<br />
 ・0を設定：<code>表X</code>のように、ドキュメント全体で連番を使用します。<br />
 ・1を設定：<code>表1-X</code>のように、章番号ごとに連番をカウントします。<br />
@@ -286,8 +280,7 @@ style="text-align: left;">表番号の連番をカウントするヘッダーの
 <td style="text-align: left;">table_title_template</td>
 <td style="text-align: left;">string</td>
 <td style="text-align: left;">“[表%s]”</td>
-<td
-style="text-align: left;">表番号の文字列のテンプレートです。<code>%s</code>の中に実際の表番号が挿入されます。</td>
+<td style="text-align: left;">表番号の文字列のテンプレートです。<code>%s</code>の中に実際の表番号が挿入されます。</td>
 </tr>
 <tr>
 <td style="text-align: left;">delimiter</td>
@@ -346,8 +339,7 @@ PandocまたはMarkdown Preview Enhancedの機能を使って、相互参照を�
 
 #### 3.5.1. GitHub Flavored Markdown(GFM)への変換
 
-Markdownファイルの先頭に`---`で囲ったブロックを記述します。その中で、以下のようにMarkdown
-Preview Enhancedのエクスポート設定を記載することで、エクスポートが可能になります。
+Markdownファイルの先頭に`---`で囲ったブロックを記述します。その中で、以下のようにMarkdown Preview Enhancedのエクスポート設定を記載することで、エクスポートが可能になります。
 
 `例`
 
@@ -357,7 +349,7 @@ Preview Enhancedのエクスポート設定を記載することで、エクス�
     output:
       custom_document:
         path: test_export.md
-        pandoc_args: ['--to=gfm', '--filter=pandoc_crossref_filter']
+        pandoc_args: ['--to=gfm', '--filter=pandoc_crossref_filter', '--wrap=preserve']
     ---
 
 上記を設定したら、VSCodeで以下のような操作を行うことで、エクスポートが可能です。
@@ -379,7 +371,7 @@ Preview Enhancedのエクスポート設定を記載することで、エクス�
       word_document:
         path: output_docx/test_export.docx
         toc: true
-        pandoc_args: ['--filter=pandoc_crossref_filter']
+        pandoc_args: ['--filter=pandoc_crossref_filter', '--wrap=preserve']
     ---
 
 ### 3.6. サンプル
