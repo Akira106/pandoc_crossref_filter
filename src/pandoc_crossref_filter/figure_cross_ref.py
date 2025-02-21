@@ -82,7 +82,7 @@ class FigureCrossRef():
         # キャプションを追加する
         caption = self.figure_title_template % fig_number
         if isinstance(elem, pf.Figure):
-            caption += " " + elem.caption.content[0].content[0].text
+            caption = caption + " " + self._get_caption(elem)
             caption = pf.Definition(pf.Para(pf.Str(caption)))
             image = elem.content[0].content[0]
             return [pf.DefinitionList(pf.DefinitionItem([image], [caption]))]
@@ -92,6 +92,23 @@ class FigureCrossRef():
             caption = pf.Str(caption)
             image = elem
             return [image, pf.Str("\n\n: "), caption]
+
+    def _get_caption(self, elem: pf.Figure) -> str:
+        """キャプションの取得
+
+        指定されたFigure要素からキャプションテキストを取得する。
+        Args:
+            elem (pf.Figure): キャプションを含むFigure要素。
+        Returns:
+            str: キャプションのテキスト。
+        """
+        list_text = []
+        for c in elem.caption.content[0].content:
+            if isinstance(c, pf.Space):
+                list_text.append(" ")
+            else:
+                list_text.append(c.text)
+        return "".join(list_text)
 
     def register_external_caption(self,
                                   caption: pf.Para,
