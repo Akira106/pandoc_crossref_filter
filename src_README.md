@@ -27,7 +27,7 @@ pandoc_crossref_filter:
 
 - Pandoc≧3.6.2: [https://github.com/jgm/pandoc/releases](https://github.com/jgm/pandoc/releases)  
   ※古いバージョンのPandocだと、動作が異なる場合があります。
-- Python3: [https://www.python.org/downloads/](https://www.python.org/downloads/)
+- Python≧3.10: [https://www.python.org/downloads/](https://www.python.org/downloads/)
 
 ### インストール
 
@@ -84,6 +84,8 @@ $ pip3 install .
 
 ### Markdown Preview Enhancedのプレビュー画面との連携の設定
 
+**※本設定を行うと、プレビュー画面の動作が重くなります。プレビュー画面を常に表示しながら同時に編集したい場合は、本設定を実施しないでください。**
+
 Markdown Preview Enhancedのプレビュー画面で、本フィルターの機能をプレビューしたい場合は、以下の設定が必要です。
 
 |VSCodeの設定項目|設定値|
@@ -94,7 +96,9 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
 <br>
 
-また、PlantUMLを使用する場合は、以下の**いずれか**の設定が必要です。
+### Markdown Preview EnhancedのPlantUMLの設定
+
+また、Markdown Preview EnhancedでPlantUMLを使用する場合は、以下の**いずれか**の設定が必要です。
 
 |VSCodeの設定項目|設定値|
 |:---|:---|
