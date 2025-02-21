@@ -48,8 +48,7 @@
 <td style="text-align: left;">です</td>
 </tr>
 <tr>
-<td
-style="text-align: left;"><code>&lt;br&gt;</code>を使うと、表の中も改行できます(Word変換にも対応。)</td>
+<td style="text-align: left;"><code>&lt;br&gt;</code>を使うと、表の中も改行できます(Word変換にも対応。)</td>
 <td style="text-align: left;">・改行<br />
 ・される<br />
 </td>

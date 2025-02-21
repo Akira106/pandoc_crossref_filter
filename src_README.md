@@ -2,7 +2,7 @@
 output:
   custom_document:
     path: README.md
-    pandoc_args: ['--to=gfm', '--filter=pandoc_crossref_filter']
+    pandoc_args: ['--to=gfm', '--filter=pandoc_crossref_filter', '--wrap=preserve']
 pandoc_crossref_filter:
   section:
     auto_section: true
@@ -305,7 +305,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 output:
   custom_document:
     path: test_export.md
-    pandoc_args: ['--to=gfm', '--filter=pandoc_crossref_filter']
+    pandoc_args: ['--to=gfm', '--filter=pandoc_crossref_filter', '--wrap=preserve']
 ---
 ```
 
@@ -329,7 +329,7 @@ output:
   word_document:
     path: output_docx/test_export.docx
     toc: true
-    pandoc_args: ['--filter=pandoc_crossref_filter']
+    pandoc_args: ['--filter=pandoc_crossref_filter', '--wrap=preserve']
 ---
 ```
 

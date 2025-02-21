@@ -4,7 +4,8 @@ output:
     path: sample.md
     pandoc_args: [
         "--to=gfm",
-        "--filter=pandoc_crossref_filter"
+        "--filter=pandoc_crossref_filter",
+        "--wrap=preserve"
     ]
   word_document:
     path: sample.docx
