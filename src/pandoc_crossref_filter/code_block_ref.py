@@ -51,6 +51,8 @@ class CodeBlockRef():
             None | pf.Figure | List:
                 PlantUMLをFigureに置き換えた要素
         """
+        # %を%%にエスケープする
+        elem.text = elem.text.replace("%", "%%")
         # 参照を抽出して一時記憶する
         replace_text, list_ref_key = self._extract_reference(elem.text)
         replace_target = {
@@ -195,8 +197,10 @@ class CodeBlockRef():
                 list_replace_value.append(value)
 
             # コードブロック文字列の置き換え
-            replace_text["elem"].text = \
+            replaced_text = \
                 replace_text["replace_text"] % tuple(list_replace_value)
+            # %のエスケープをもとに戻して代入する
+            replace_text["elem"].text = replaced_text.replace("%%", "%")
 
     @classmethod
     def _is_puml(cls, elem: pf.Element) -> bool:
