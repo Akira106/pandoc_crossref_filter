@@ -37,7 +37,7 @@ class CodeBlockRef():
         # PlantUMLで出力するべきコードブロック
         self.list_puml: List[Dict] = []
 
-    def register_code_block(self, elem: pf.CodeBlock) -> None | pf.Figure | List:
+    def register_code_block(self, elem: pf.CodeBlock) -> None | pf.Image | pf.Figure | List:
         """コードブロックの登録
 
         - コードブロックの参照を抽出して一時保存する
@@ -48,7 +48,7 @@ class CodeBlockRef():
                 コードブロック
 
         Returns:
-            None | pf.Figure | List:
+            None | pf.Image | pf.Figure | List:
                 PlantUMLをFigureに置き換えた要素
         """
         # %を%%にエスケープする
@@ -98,6 +98,9 @@ class CodeBlockRef():
 
             caption = pf.Str(caption)
             image = pf.Image(caption, url=filename)
+            if identifier is None:
+                return image
+
             figure = pf.Figure(
                 pf.Plain(image),
                 caption=pf.Caption(pf.Plain(caption)),

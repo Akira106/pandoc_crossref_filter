@@ -82,9 +82,13 @@ def action(elem, doc):
             return
 
         # コードブロックをイメージ要素に置き換える
-        if isinstance(ret, pf.Figure):
-            return doc.figure_cross_ref.register_figure(
+        if isinstance(ret, (pf.Figure, pf.Image)):
+            figure = doc.figure_cross_ref.register_figure(
                 ret, doc.list_present_section_numbers)
+            # Image要素の場合は、Para要素に変換しないとエラーになる
+            if isinstance(ret, pf.Image):
+                figure = pf.Para(figure)
+            return figure
 
         # Markdown Preview Enhancedの場合は、図番号をfigure_cross_refに管理させる
         else:
