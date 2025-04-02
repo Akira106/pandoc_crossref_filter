@@ -51,16 +51,16 @@ class CodeBlockRef():
             None | pf.Image | pf.Figure | List:
                 PlantUMLをFigureに置き換えた要素
         """
-        # %を%%にエスケープする
-        elem.text = elem.text.replace("%", "%%")
         # 参照を抽出して一時記憶する
         replace_text, list_ref_key = self._extract_reference(elem.text)
-        replace_target = {
-            "elem": elem,
-            "replace_text": replace_text,
-            "list_ref_key": list_ref_key
-        }
-        self.list_replace_target.append(replace_target)
+        if len(list_ref_key) > 0:
+            # 参照あり
+            # %のエスケープは戻さなくてよい(参照適用時にpythonが勝手に戻す)
+            self.list_replace_target.append({
+                "elem": elem,
+                "replace_text": replace_text,
+                "list_ref_key": list_ref_key
+            })
 
         # PlantUMLでなければ終了
         if self._is_puml(elem) is False:
@@ -124,8 +124,14 @@ class CodeBlockRef():
         pattern = r"\[@(.*?)\]"
         matches = re.findall(pattern, text)  # "XXX"部分を抽出
 
+        if len(matches) == 0:
+            # 抽出なし
+            return text, []
+
         # "[@XXX]"を"%s"に置き換え
-        replaced_text = re.sub(pattern, "%s", text)
+        # ただし、事前に%を%%にエスケープする
+        # (参照適用時にpythonが勝手に%%を%に戻すので、明示的にエスケープは戻さなくてよい)
+        replaced_text = re.sub(pattern, "%s", text.replace("%", "%%"))
 
         return replaced_text, matches
 
@@ -196,14 +202,11 @@ class CodeBlockRef():
                     sys.exit(1)
 
                 # 参照の取得
-                value = reference.get_reference_string(key)
-                list_replace_value.append(value)
+                list_replace_value.append(reference.get_reference_string(key))
 
             # コードブロック文字列の置き換え
-            replaced_text = \
+            replace_text["elem"].text = \
                 replace_text["replace_text"] % tuple(list_replace_value)
-            # %のエスケープをもとに戻して代入する
-            replace_text["elem"].text = replaced_text.replace("%%", "%")
 
     @classmethod
     def _is_puml(cls, elem: pf.Element) -> bool:
