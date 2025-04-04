@@ -93,3 +93,15 @@ B -> C: リクエスト
 C -> C: [@sec:sec1]を参照
 C --> B: 応答
 ```
+
+<br>
+
+[@fig:test_mermaid]は、Mermaidで作成しています。
+
+```{.mermaid}
+%%filename=test_mermaid.svg
+%%caption=Mermaidのテスト
+%%#fig:test_mermaid
+sequenceDiagram
+  機能A ->> 機能B: [@sec:sec2]を参照
+```

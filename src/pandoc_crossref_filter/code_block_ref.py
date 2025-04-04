@@ -13,6 +13,7 @@ from .section_cross_ref import SectionCrossRef
 from .figure_cross_ref import FigureCrossRef
 from .table_cross_ref import TableCrossRef
 from .plantuml_wrapper import PlantUMLWrapper
+from .mermaid_wrapper import MermaidWrapper
 
 
 logger = utils.get_logger()
@@ -26,15 +27,18 @@ class CodeBlockRef():
         Args:
             config (dict): config設定
             - save_dir (str):
-                PlantUML画像の出力先
+                PlantUML or Mermaid画像の出力先
         """
         self.save_dir: str = config.get("save_dir", "assets")
 
         # 書き換えるべき項目を記憶する(最後に書き換える)
         self.list_replace_target: List[Dict] = []
 
-        # PlantUMLのラッパー
-        self.puml_wrapper = PlantUMLWrapper()
+        # ラッパー
+        self.list_wrapper = [
+            PlantUMLWrapper(),
+            MermaidWrapper()
+        ]
 
     def register_code_block(self, elem: pf.CodeBlock) -> None | pf.Image | pf.Figure | List:
         """コードブロックの登録
@@ -61,47 +65,50 @@ class CodeBlockRef():
                 "list_ref_key": list_ref_key
             })
 
-        # PlantUMLでなければ終了
-        if self.puml_wrapper.is_image(elem) is False:
-            return
+        # コードブロックを画像に変換する
+        for wrapper in self.list_wrapper:
+            if wrapper.is_image(elem) is False:
+                continue
 
-        # ファイル名、キャプション、IDを取得する
-        filename, caption, identifier = \
-            self.puml_wrapper.extract_filename_caption_identifier(elem.text)
+            # ファイル名、キャプション、IDを取得する
+            filename, caption, identifier = \
+                wrapper.extract_filename_caption_identifier(elem.text)
 
-        # Markdown Preview Enhancedでプレビューしている場合は、キャプションとIDを追加する
-        if self.puml_wrapper.is_image_when_MPE_preview(elem.attributes):
-            # IDが定義されていなければ何もしない
-            if identifier is None:
-                return None
+            # Markdown Preview Enhancedでプレビューしている場合は、キャプションとIDを追加する
+            if wrapper.is_image_when_MPE_preview(elem.attributes):
+                # IDが定義されていなければ何もしない
+                if identifier is None:
+                    return None
 
-            fig_num = pf.Str("")  # figure_cross_refで書き換える
-            caption = pf.Para(fig_num, pf.Space, pf.Str(caption))
-            return [caption, identifier]
+                fig_num = pf.Str("")  # figure_cross_refで書き換える
+                caption = pf.Para(fig_num, pf.Space, pf.Str(caption))
+                return [caption, identifier]
 
-        # エキスポート時は画像で返す
-        # (上位側でFigureCrossRefに登録する)
-        else:
-            # 出力先のディレクトリを追加
-            filename = utils.joinpath(self.save_dir, filename)
+            # エキスポート時は画像で返す
+            # (上位側でFigureCrossRefに登録する)
+            else:
+                # 出力先のディレクトリを追加
+                filename = utils.joinpath(self.save_dir, filename)
 
-            # 拡張子が無ければsvgにする
-            if filename.endswith(".png") is False and \
-               filename.endswith(".svg") is False:
-                filename += ".svg"
+                # 拡張子が無ければsvgにする
+                if filename.endswith(".png") is False and \
+                   filename.endswith(".svg") is False:
+                    filename += ".svg"
 
-            self.puml_wrapper.add(filename, elem)
+                wrapper.add(filename, elem)
 
-            caption = pf.Str(caption)
-            image = pf.Image(caption, url=filename)
-            if identifier is None:
-                return image
+                caption = pf.Str(caption)
+                image = pf.Image(caption, url=filename)
+                if identifier is None:
+                    return image
 
-            figure = pf.Figure(
-                pf.Plain(image),
-                caption=pf.Caption(pf.Plain(caption)),
-                identifier=identifier)
-            return figure
+                figure = pf.Figure(
+                    pf.Plain(image),
+                    caption=pf.Caption(pf.Plain(caption)),
+                    identifier=identifier)
+                return figure
+
+        return None
 
     def _extract_reference(self, text: str) -> Tuple[str, List[str]]:
         """コードブロックから参照を抽出する関数
@@ -186,13 +193,13 @@ class CodeBlockRef():
         # 出力ファイルの重複チェック
         self._assert_no_duplicate_filename(
             itertools.chain.from_iterable([
-                wrapper.get_filenames()
-                for wrapper in [self.puml_wrapper]
+                wrapper.get_filenames() for wrapper in self.list_wrapper
             ])
         )
 
-        # PlantUML画像の出力
-        self.puml_wrapper.export_images()
+        # 画像の出力
+        for wrapper in self.list_wrapper:
+            wrapper.export_images()
 
     @staticmethod
     def _assert_no_duplicate_filename(list_filename: List[str]) -> None:
