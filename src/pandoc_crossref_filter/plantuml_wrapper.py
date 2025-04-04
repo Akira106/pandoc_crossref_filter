@@ -117,12 +117,6 @@ class PlantUMLWrapper():
         ]
         return language in list_target
 
-    def export_images(self) -> None:
-        """PlantUML画像の出力"""
-        # 画像に変換する
-        for puml in self.list_puml:
-            self._export_image(puml["filename"], puml["elem"].text)
-
     def add(self, filename: str, elem: pf.Element) -> None:
         """PlantUMLに変換する対象を追加する
 
@@ -144,6 +138,12 @@ class PlantUMLWrapper():
             list(str): 出力画像のファイル名の一覧
         """
         return [puml["filename"] for puml in self.list_puml]
+
+    def export_images(self) -> None:
+        """PlantUML画像の出力"""
+        # 画像に変換する
+        for puml in self.list_puml:
+            self._export_image(puml["filename"], puml["elem"].text)
 
     def _export_image(self, filename: str, text: str) -> None:
         """PlantUMLのテキストを画像に出力する
