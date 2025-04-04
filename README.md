@@ -5,7 +5,7 @@
 - Markdownの中で、セクション番号、図番号、表番号の相互参照を実現します。
 - Pandocのカスタムフィルターとして動作します。
 - VSCodeのプラグインである、Markdown Preview Enhancedとの連携が可能です。
-- PlantUMLの図の中にも引用を挿入することができます。
+- PlantUML/Mermaidの図の中にも引用を挿入することができます。
 - 表の中で改行することができます。pandocを使ってMarkdownをWordファイルに変換したときにも、改行が維持されます。
 
 ## 2. インストール方法
@@ -61,8 +61,17 @@ $ docker-compose up -d
 
 最後に、pipでインストールします。
 
+- Mermaidを使用しない場合
+
 ``` shell-session
 $ pip3 install .
+```
+
+- Mermaidを使用する場合
+
+``` shell-session
+$ pip3 install .[all]
+$ playwright install --with-deps chromium
 ```
 
 ※ 上記の実行時に`XXXXX which is not on PATH.`のようなWarningメッセージが出た場合、環境変数`PATH`に、インストール先のパスを追加してください。
@@ -162,6 +171,28 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
     Bob -> Alice : hello
     ```
 
+#### 3.1.5. Mermaidへの図番号の挿入
+
+1.  \`\`\`{.mermaid}\`\`\`というコードブロックを使用します。**※1**
+2.  Mermaidのコードブロックの中に以下のコメントを記載することで、図番号の挿入、キャプション、出力画像ファイル名の設定を行います。
+
+- 図番号の挿入：`%%#fig:XXX`
+- キャプション：`%%caption=YYY`
+- 出力画像のファイル名：`%%filename=ZZZ`
+
+**※1**  
+\`\`\`mermaid\`\`\`という表記でもPandoc単体なら動作しますが、Mermaidの中で3.2節に示す引用を使用した場合、Markdown Preview Enhancedとの連携が正しく動作しなくなります。
+
+`例`
+
+    ```{.mermaid}
+    %%filename="test.svg"
+    %%#fig:fig_puml
+    %%caption=Mermaidの画像です
+    sequenceDiagram
+      Bob ->> Alice : hello
+    ```
+
 ### 3.2. 参照の引用
 
 セクション番号、図番号、表番号を、それぞれ
@@ -173,7 +204,7 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
 で引用することができます。  
 (`XXX`は、3.1節で挿入したものに対応します)
 
-引用は、本文、箇条書き、表、ヘッダー(3.4.2項) 、コードブロックの中(PlantUMLの図の中、3.4.3項)で使用することができます。
+引用は、本文、箇条書き、表、ヘッダー(3.4.2項) 、コードブロックの中(PlantUML/Mermaidの図の中、3.4.3項)で使用することができます。
 
 ### 3.3. 設定値
 
@@ -295,7 +326,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
 | 設置値 | 型 | デフォルト値 | 内容 |
 |:---|:---|:---|:---|
-| save_dir | string | “assets” | PlantUMLを画像出力したときの、出力先のディレクトリのパスです。 |
+| save_dir | string | “assets” | PlantUML/Mermaidを画像出力したときの、出力先のディレクトリのパスです。 |
 
 \[表3-4\] コードブロックの設定項目
 
@@ -314,15 +345,15 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 ヘッダー内で、他のセクション番号を引用することができます。  
 例えば、セクション番号のカウントを、途中から数字からアルファベットに変更したい場合など、細かい動作を指定するのに有効です。
 
-#### 3.4.3. PlantUML内の相互参照
+#### 3.4.3. PlantUML/Mermaid内の相互参照
 
-PlantUMLのコードブロック内で、3.2節の引用を使用することが可能です。  
-ただし、Markdown Preview Enhancedとの連携を行う場合は、3.1.4項に記載したように、コードブロックの先頭を`{.plantuml}`で開始する必要があります。
+PlantUML/Mermaidのコードブロック内で、3.2節の引用を使用することが可能です。  
+ただし、Markdown Preview Enhancedとの連携を行う場合は、3.1.4項に記載したように、コードブロックの先頭を`{.plantuml}`/`{.mermaid}`で開始する必要があります。
 
 ##### 補足
 
-コードブロックの先頭を`plantuml`で開始した場合、Markdown Preview Enhancedの機能でエクスポートを行ったときに、  
-本フィルターが相互参照を解決するよりも先に、Markdown Preview EnhancedによってPlantUMLの画像出力が実行されてしまい、相互参照を解決できなくなります。
+コードブロックの先頭を`plantuml`/`mermaid`で開始した場合、Markdown Preview Enhancedの機能でエクスポートを行ったときに、  
+本フィルターが相互参照を解決するよりも先に、Markdown Preview EnhancedによってPlantUML/Mermaidの画像出力が実行されてしまい、相互参照を解決できなくなります。
 
 #### 3.4.4. 表の中の改行
 

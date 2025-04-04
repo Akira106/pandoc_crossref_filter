@@ -18,7 +18,7 @@ pandoc_crossref_filter:
 - Markdownの中で、セクション番号、図番号、表番号の相互参照を実現します。
 - Pandocのカスタムフィルターとして動作します。
 - VSCodeのプラグインである、Markdown Preview Enhancedとの連携が可能です。
-- PlantUMLの図の中にも引用を挿入することができます。
+- PlantUML/Mermaidの図の中にも引用を挿入することができます。
 - 表の中で改行することができます。pandocを使ってMarkdownをWordファイルに変換したときにも、改行が維持されます。
 
 ## インストール方法
@@ -76,8 +76,17 @@ PLANTUML_SERVER_URL = "http://127.0.0.1:8080"
 
 最後に、pipでインストールします。
 
+- Mermaidを使用しない場合
+
 ```shell-session
 $ pip3 install .
+```
+
+- Mermaidを使用する場合
+
+```shell-session
+$ pip3 install .[all]
+$ playwright install --with-deps chromium
 ```
 
 ※ 上記の実行時に`XXXXX which is not on PATH.`のようなWarningメッセージが出た場合、環境変数`PATH`に、インストール先のパスを追加してください。
@@ -185,6 +194,29 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
     Bob -> Alice : hello
     ```
 
+#### Mermaidへの図番号の挿入 {#sec:sec_mermaid_insert}
+
+1. \`\`\`{.mermaid}\`\`\`というコードブロックを使用します。**※1**
+2. Mermaidのコードブロックの中に以下のコメントを記載することで、図番号の挿入、キャプション、出力画像ファイル名の設定を行います。
+  - 図番号の挿入：`%%#fig:XXX`
+  - キャプション：`%%caption=YYY`
+  - 出力画像のファイル名：`%%filename=ZZZ`
+
+
+**※1**
+\`\`\`mermaid\`\`\`という表記でもPandoc単体なら動作しますが、Mermaidの中で[@sec:sec_cite]に示す引用を使用した場合、Markdown Preview Enhancedとの連携が正しく動作しなくなります。
+
+`例`
+
+    ```{.mermaid}
+    %%filename="test.svg"
+    %%#fig:fig_puml
+    %%caption=Mermaidの画像です
+    sequenceDiagram
+      Bob ->> Alice : hello
+    ```
+
+
 ### 参照の引用 {#sec:sec_cite}
 
 セクション番号、図番号、表番号を、それぞれ
@@ -196,7 +228,7 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
 で引用することができます。
 (`XXX`は、[@sec:sec_insert]で挿入したものに対応します)
 
-引用は、本文、箇条書き、表、ヘッダー([@sec:sec_cite_in_header]) 、コードブロックの中(PlantUMLの図の中、[@sec:sec_cite_in_puml])で使用することができます。
+引用は、本文、箇条書き、表、ヘッダー([@sec:sec_cite_in_header]) 、コードブロックの中(PlantUML/Mermaidの図の中、[@sec:sec_cite_in_puml])で使用することができます。
 
 ### 設定値
 
@@ -249,7 +281,7 @@ pandoc_crossref_filter:
 
 |設置値|型|デフォルト値|内容|
 |:---|:---|:---|:---|
-|save_dir|string|"assets"|PlantUMLを画像出力したときの、出力先のディレクトリのパスです。|
+|save_dir|string|"assets"|PlantUML/Mermaidを画像出力したときの、出力先のディレクトリのパスです。|
 : コードブロックの設定項目{#tbl:tbl_config_code_block}
 
 ### その他の機能
@@ -269,15 +301,15 @@ pandoc_crossref_filter:
 ヘッダー内で、他のセクション番号を引用することができます。
 例えば、セクション番号のカウントを、途中から数字からアルファベットに変更したい場合など、細かい動作を指定するのに有効です。
 
-#### PlantUML内の相互参照{#sec:sec_cite_in_puml}
+#### PlantUML/Mermaid内の相互参照{#sec:sec_cite_in_puml}
 
-PlantUMLのコードブロック内で、[@sec:sec_cite]の引用を使用することが可能です。
-ただし、Markdown Preview Enhancedとの連携を行う場合は、[@sec:sec_puml_insert]に記載したように、コードブロックの先頭を`{.plantuml}`で開始する必要があります。
+PlantUML/Mermaidのコードブロック内で、[@sec:sec_cite]の引用を使用することが可能です。
+ただし、Markdown Preview Enhancedとの連携を行う場合は、[@sec:sec_puml_insert]に記載したように、コードブロックの先頭を`{.plantuml}`/`{.mermaid}`で開始する必要があります。
 
 ##### 補足{.un}
 
-コードブロックの先頭を`plantuml`で開始した場合、Markdown Preview Enhancedの機能でエクスポートを行ったときに、
-本フィルターが相互参照を解決するよりも先に、Markdown Preview EnhancedによってPlantUMLの画像出力が実行されてしまい、相互参照を解決できなくなります。
+コードブロックの先頭を`plantuml`/`mermaid`で開始した場合、Markdown Preview Enhancedの機能でエクスポートを行ったときに、
+本フィルターが相互参照を解決するよりも先に、Markdown Preview EnhancedによってPlantUML/Mermaidの画像出力が実行されてしまい、相互参照を解決できなくなります。
 
 #### 表の中の改行
 
