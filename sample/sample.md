@@ -48,7 +48,8 @@
 <td style="text-align: left;">です</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>&lt;br&gt;</code>を使うと、表の中も改行できます(Word変換にも対応。)</td>
+<td
+style="text-align: left;"><code>&lt;br&gt;</code>を使うと、表の中も改行できます(Word変換にも対応。)</td>
 <td style="text-align: left;">・改行<br />
 ・される<br />
 </td>
@@ -71,3 +72,10 @@
 
 ![処理Xの詳細](assets/test2.svg)  
 \[図4-2\] 処理Xの詳細
+
+  
+
+\[図4-3\]は、Mermaidで作成しています。
+
+![Mermaidのテスト](assets/test_mermaid.svg)  
+\[図4-3\] Mermaidのテスト
