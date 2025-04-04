@@ -162,5 +162,5 @@ def finalize(doc):
         doc.figure_cross_ref,
         doc.table_cross_ref
     )
-    # PlantUML画像を出力する
-    doc.code_block_ref.export_puml_images()
+    # 画像を出力する
+    doc.code_block_ref.export_images()

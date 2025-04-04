@@ -3,18 +3,16 @@ import sys
 import re
 import hashlib
 from typing import List, Tuple, Dict
-import json
 import collections
+import itertools
 
 import panflute as pf
-import requests
-import plantuml
 
 from . import utils
 from .section_cross_ref import SectionCrossRef
 from .figure_cross_ref import FigureCrossRef
 from .table_cross_ref import TableCrossRef
-from .config import PLANTUML_SERVER_URL
+from .plantuml_wrapper import PlantUMLWrapper
 
 
 logger = utils.get_logger()
@@ -34,8 +32,9 @@ class CodeBlockRef():
 
         # 書き換えるべき項目を記憶する(最後に書き換える)
         self.list_replace_target: List[Dict] = []
-        # PlantUMLで出力するべきコードブロック
-        self.list_puml: List[Dict] = []
+
+        # PlantUMLのラッパー
+        self.puml_wrapper = PlantUMLWrapper()
 
     def register_code_block(self, elem: pf.CodeBlock) -> None | pf.Image | pf.Figure | List:
         """コードブロックの登録
@@ -63,15 +62,15 @@ class CodeBlockRef():
             })
 
         # PlantUMLでなければ終了
-        if self._is_puml(elem) is False:
+        if self.puml_wrapper.is_image(elem) is False:
             return
 
         # ファイル名、キャプション、IDを取得する
         filename, caption, identifier = \
-            self._extract_filename_caption_identifier(elem.text)
+            self.puml_wrapper.extract_filename_caption_identifier(elem.text)
 
         # Markdown Preview Enhancedでプレビューしている場合は、キャプションとIDを追加する
-        if self._is_puml_when_MPE_preview(elem.attributes):
+        if self.puml_wrapper.is_image_when_MPE_preview(elem.attributes):
             # IDが定義されていなければ何もしない
             if identifier is None:
                 return None
@@ -91,10 +90,7 @@ class CodeBlockRef():
                filename.endswith(".svg") is False:
                 filename += ".svg"
 
-            self.list_puml.append({
-                "filename": filename,
-                "elem": elem
-            })
+            self.puml_wrapper.add(filename, elem)
 
             caption = pf.Str(caption)
             image = pf.Image(caption, url=filename)
@@ -135,44 +131,6 @@ class CodeBlockRef():
 
         return replaced_text, matches
 
-    @staticmethod
-    def _extract_filename_caption_identifier(text: str) -> Tuple[str | None,
-                                                                 str,
-                                                                 str | None]:
-        """PlantUMLのCodeBlockの中からファイル名、キャプション、IDを取得する
-
-        PlantUMLのテキスト中に
-        - 'filename=XX
-        - 'caption=YY
-        - '#fig:ZZ'
-        が記載されているとき、XX, YY, fig:ZZを返します。
-
-        Args:
-            text (str):
-                PlantUMLのテキスト
-
-        Returns:
-            str | None: PlantUMLで出力後のファイル名 = XX
-            str: キャプション = YY
-            str | None: ID = fig:ZZ
-        """
-        filename = None
-        caption = ""
-        fig = None
-
-        match_filename = re.search(r"^'filename=(\S+)", text, re.MULTILINE)
-        match_caption = re.search(r"^'caption=(.+)", text, re.MULTILINE)
-        match_fig = re.search(r"^'#(fig:\S+)", text, re.MULTILINE)
-
-        if match_filename:
-            filename = match_filename.group(1).strip("'" + '"')
-        if match_caption:
-            caption = match_caption.group(1).strip("'" + '"')
-        if match_fig:
-            fig = match_fig.group(1)
-
-        return filename, caption, fig
-
     def replace_reference(self,
                           section_cross_ref: SectionCrossRef,
                           figure_cross_ref: FigureCrossRef,
@@ -208,65 +166,6 @@ class CodeBlockRef():
             replace_text["elem"].text = \
                 replace_text["replace_text"] % tuple(list_replace_value)
 
-    @classmethod
-    def _is_puml(cls, elem: pf.Element) -> bool:
-        """コードブロックがPlantUMLかどうかを判定する
-
-        通常のpandoc、または
-        Markdown Preview Enhancedでexportするときの判定
-
-        Args:
-            elem (pf.Element): Pandocの要素
-
-        Returns:
-            判定結果
-        """
-        if cls._is_puml_when_export(elem.classes):
-            return True
-        if cls._is_puml_when_MPE_preview(elem.attributes):
-            return True
-
-        return False
-
-    @staticmethod
-    def _is_puml_when_export(classes: List[str]) -> bool:
-        """コードブロックがPlantUMLかどうかを判定する
-
-        通常のpandoc、または
-        Markdown Preview Enhancedでexportするときの判定
-
-        Args:
-            classes (list(str)): 要素のクラス一覧
-
-        Returns:
-            判定結果
-        """
-        list_target = [
-            "plantuml",
-            "puml"
-        ]
-        return any([target in classes for target in list_target])
-
-    @staticmethod
-    def _is_puml_when_MPE_preview(attributes: Dict) -> bool:
-        """コードブロックがPlantUMLかどうかを判定する
-
-        Markdown Preview Enhancedでプレビューしている場合は判定方法が変わる
-
-        Args:
-            attributes (Dict): 要素の属性一覧
-
-        Returns:
-            判定結果
-        """
-        data_parsed_info = json.loads(attributes.get("data-parsed-info", "{}"))
-        language = data_parsed_info.get("language")
-        list_target = [
-            "plantuml",
-            "puml"
-        ]
-        return language in list_target
-
     @staticmethod
     def _has_ref(identifier: str) -> bool:
         """図の参照が設定されているかどうか判定する"""
@@ -278,23 +177,22 @@ class CodeBlockRef():
         hash_object = hashlib.md5(text.encode())
         return hash_object.hexdigest()
 
-    def export_puml_images(self) -> None:
-        """PlantUML画像の出力"""
-        # PlantUMLがなければ終了
-        if len(self.list_puml) == 0:
-            return
-
+    def export_images(self) -> None:
+        """画像の出力"""
         # ディレクトリが無ければ作成
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir, exist_ok=True)
 
         # 出力ファイルの重複チェック
         self._assert_no_duplicate_filename(
-            [puml["filename"] for puml in self.list_puml])
+            itertools.chain.from_iterable([
+                wrapper.get_filenames()
+                for wrapper in [self.puml_wrapper]
+            ])
+        )
 
-        # 画像に変換する
-        for puml in self.list_puml:
-            self._export_puml_image(puml["filename"], puml["elem"].text)
+        # PlantUML画像の出力
+        self.puml_wrapper.export_images()
 
     @staticmethod
     def _assert_no_duplicate_filename(list_filename: List[str]) -> None:
@@ -310,26 +208,3 @@ class CodeBlockRef():
             for dup in duplicates:
                 logger.error(f"Duplicate filename: {dup}.")
             sys.exit(1)
-
-    def _export_puml_image(self, filename: str, text: str) -> None:
-        """PlantUMLのテキストを画像に出力する
-
-        Args:
-            filename (str): 出力先の画像ファイル名
-            text (str): PlantUMLのテキスト
-        """
-        fmt = "svg" if filename.endswith(".svg") else "png"
-        encode_text = plantuml.deflate_and_encode(text)
-        url = PLANTUML_SERVER_URL + f"/{fmt}/{encode_text}"
-
-        try:
-            ret = requests.get(url)
-        except Exception:
-            logger.error(f"Failed to connect to {PLANTUML_SERVER_URL}.")
-            sys.exit(1)
-        if ret.status_code != 200:
-            logger.error(f"Failed to export {filename}.")
-            sys.exit(1)
-
-        with open(filename, "wb") as f:
-            f.write(ret.content)
