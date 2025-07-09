@@ -15,6 +15,7 @@ CONFIG_SECTION = f"{CONFIG_ROOT}.section"
 CONFIG_IMAGE = f"{CONFIG_ROOT}.figure"
 CONFIG_TABLE = f"{CONFIG_ROOT}.table"
 CONFIG_CODE_BLOCK = f"{CONFIG_ROOT}.code_block"
+CONFIG_TOP_INSERT_TEXT = f"{CONFIG_ROOT}.top_insert_text"
 
 
 def prepare(doc):
@@ -33,6 +34,12 @@ def prepare(doc):
     # 現在のセクション番号
     doc.list_present_section_numbers = []
 
+    # ドキュメントの先頭に任意のテキストを挿入
+    top_insert_text = doc.get_metadata(CONFIG_TOP_INSERT_TEXT, None)
+    if top_insert_text:
+        logger.error(top_insert_text)
+        toc = pf.RawBlock(top_insert_text, format='markdown')
+        doc.content.insert(0, toc)
 
 def action(elem, doc):
     """
