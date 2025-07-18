@@ -90,10 +90,10 @@ class CodeBlockRef():
                 # 出力先のディレクトリを追加
                 filename = utils.joinpath(self.save_dir, filename)
 
-                # 拡張子が無ければsvgにする
+                # 拡張子が無ければpngにする
                 if filename.endswith(".png") is False and \
                    filename.endswith(".svg") is False:
-                    filename += ".svg"
+                    filename += ".png"
 
                 wrapper.add(filename, elem)
 
