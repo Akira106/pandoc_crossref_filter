@@ -98,7 +98,7 @@ $ pip3 install .
 
 ```shell-session
 $ pip3 install .[all]
-$ playwright install --with-deps chromium
+$ playwright install chromium
 ```
 
 ※ 上記の実行時に`XXXXX which is not on PATH.`のようなWarningメッセージが出た場合、環境変数`PATH`に、インストール先のパスを追加してください。
