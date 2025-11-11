@@ -24,8 +24,8 @@
 
 ### 2.1. 事前に必要なもの
 
-- Pandoc≧3.6.2: <https://github.com/jgm/pandoc/releases>  
-  ※古いバージョンのPandocだと、動作が異なる場合があります。
+- Pandoc==3.6.2: <https://github.com/jgm/pandoc/releases>  
+  ※異なるバージョンのPandocだと、動作が異なる場合があります。
 - Python≧3.10: <https://www.python.org/downloads/>
 
 ### 2.2. インストール
@@ -420,3 +420,4 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 ### 3.6. サンプル
 
 [sample](sample/)にサンプルを記載しています。
+

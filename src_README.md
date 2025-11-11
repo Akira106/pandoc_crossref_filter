@@ -37,8 +37,8 @@ pandoc_crossref_filter:
 
 ### 事前に必要なもの
 
-- Pandoc≧3.6.2: [https://github.com/jgm/pandoc/releases](https://github.com/jgm/pandoc/releases)  
-  ※古いバージョンのPandocだと、動作が異なる場合があります。
+- Pandoc==3.6.2: [https://github.com/jgm/pandoc/releases](https://github.com/jgm/pandoc/releases)  
+  ※異なるバージョンのPandocだと、動作が異なる場合があります。
 - Python≧3.10: [https://www.python.org/downloads/](https://www.python.org/downloads/)
 
 ### インストール
