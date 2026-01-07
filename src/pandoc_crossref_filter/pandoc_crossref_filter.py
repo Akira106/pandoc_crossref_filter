@@ -124,31 +124,27 @@ def action(elem, doc):
     elif isinstance(elem, pf.Cite):
         list_ret_elem = []
         for citation in elem.citations:
-            replace_str = pf.Str("")
             # セクション番号の参照
             if citation.id.startswith("sec:"):
-                root_elem = utils.get_root_elem(elem)
-                doc.section_cross_ref.add_reference(
+                ret_elem = doc.section_cross_ref.add_reference(
                     citation.id,
-                    replace_str,
-                    isinstance(root_elem, pf.Header)
+                    isinstance(utils.get_root_elem(elem), pf.Header)
                 )
-                list_ret_elem.append(replace_str)
+                list_ret_elem.append(ret_elem)
+
             # 図番号の参照
             elif citation.id.startswith("fig:"):
-                doc.figure_cross_ref.add_reference(
+                ret_elem = doc.figure_cross_ref.add_reference(
                     citation.id,
-                    replace_str
                 )
-                list_ret_elem.append(replace_str)
+                list_ret_elem.append(ret_elem)
 
             # 表番号の参照
             elif citation.id.startswith("tbl:"):
-                doc.table_cross_ref.add_reference(
+                ret_elem = doc.table_cross_ref.add_reference(
                     citation.id,
-                    replace_str
                 )
-                list_ret_elem.append(replace_str)
+                list_ret_elem.append(ret_elem)
 
         if len(list_ret_elem) > 0:
             # pf.Citeをpf.Strで置き換える

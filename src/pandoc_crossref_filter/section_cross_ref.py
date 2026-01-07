@@ -148,20 +148,30 @@ class SectionCrossRef():
 
     def add_reference(self,
                       key: str,
-                      target: pf.Str,
-                      is_header: bool) -> None:
+                      is_header: bool) -> pf.Str | pf.Link:
         """参照を上書きするべき対象を一時的に記憶しておく
 
         Args:
             key (str): 参照の目印となるキー
-            target (pf.Str): 上書きするべき項目
             is_header (bool): 上書き対象がヘッダーかどうか
+
+        Returns:
+            pf.Str | pf.Link:
+                参照追加後の要素
         """
+        target = pf.Str("")
         self.list_replace_target.append({
             "key": key,
             "target": target,
             "is_header": is_header
         })
+
+        # ヘッダー内の参照なら終了
+        if is_header:
+            return target
+
+        # 参照先へのリンクを張る
+        return pf.Link(target, url=f"#{key}")
 
     def replace_reference(self) -> None:
         """参照の上書き"""

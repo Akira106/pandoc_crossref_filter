@@ -54,7 +54,8 @@ class TableCrossRef():
                 セクション番号
         """
         # Table要素のキャプションでなければ終了
-        if not isinstance(utils.get_root_elem(elem), pf.Table):
+        root_elem = utils.get_root_elem(elem)
+        if not isinstance(root_elem, pf.Table):
             return
 
         # キャプションのテキスト情報と表定義の取得
@@ -65,6 +66,9 @@ class TableCrossRef():
         # 参照が定義されていなければ何もしない
         if identifier is None:
             return
+
+        # 親のTable要素にidentifierを設定する
+        root_elem.identifier = identifier
 
         # 表番号の取得
         table_number = self._get_table_number(list_present_section_numbers)
@@ -189,18 +193,24 @@ class TableCrossRef():
         elem.content[0].content = [pf.Str(caption_text)]
 
     def add_reference(self,
-                      key: str,
-                      target: pf.Str) -> None:
+                      key: str) -> pf.Str | pf.Link:
         """参照を上書きするべき対象を一時的に記憶しておく
 
         Args:
             key (str): 参照の目印となるキー
-            target (pf.Str): 上書きするべき項目
+
+        Returns:
+            pf.Str | pf.Link:
+                参照追加後の要素
         """
+        target = pf.Str("")
         self.list_replace_target.append({
             "key": key,
             "target": target,
         })
+
+        # 参照先へのリンクを張る
+        return pf.Link(target, url=f"#{key}")
 
     def replace_reference(self) -> None:
         """参照の上書き"""

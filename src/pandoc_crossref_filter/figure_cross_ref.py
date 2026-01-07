@@ -85,6 +85,7 @@ class FigureCrossRef():
             caption = caption + " " + self._get_caption(elem)
             caption = pf.Definition(pf.Para(pf.Str(caption)))
             image = elem.content[0].content[0]
+            image.identifier = elem.identifier
             return [pf.DefinitionList(pf.DefinitionItem([image], [caption]))]
         else:
             if len(elem.content) > 0:
@@ -188,18 +189,24 @@ class FigureCrossRef():
         return fig_number
 
     def add_reference(self,
-                      key: str,
-                      target: pf.Str) -> None:
+                      key: str) -> pf.Str | pf.Link:
         """参照を上書きするべき対象を一時的に記憶しておく
 
         Args:
             key (str): 参照の目印となるキー
-            target (pf.Str): 上書きするべき項目
+
+        Returns:
+            pf.Str | pf.Link:
+                参照追加後の要素
         """
+        target = pf.Str("")
         self.list_replace_target.append({
             "key": key,
             "target": target,
         })
+
+        # 参照先へのリンクを張る
+        return pf.Link(target, url=f"#{key}")
 
     def replace_reference(self) -> None:
         """参照の上書き"""
