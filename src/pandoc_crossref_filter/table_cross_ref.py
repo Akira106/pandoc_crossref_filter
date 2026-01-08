@@ -70,8 +70,9 @@ class TableCrossRef():
         if identifier is None:
             return
 
-        # 親のTable要素にidentifierを設定する
-        root_elem.identifier = identifier
+        if self.enable_link:
+            # 親のTable要素に参照元(identifier)を設定する
+            root_elem.identifier = identifier
 
         # 表番号の取得
         table_number = self._get_table_number(list_present_section_numbers)
