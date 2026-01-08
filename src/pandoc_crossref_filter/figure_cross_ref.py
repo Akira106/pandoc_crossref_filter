@@ -88,7 +88,9 @@ class FigureCrossRef():
             caption = caption + " " + self._get_caption(elem)
             caption = pf.Definition(pf.Para(pf.Str(caption)))
             image = elem.content[0].content[0]
-            image.identifier = elem.identifier
+            if self.enable_link:
+                # 参照元の定義
+                image.identifier = elem.identifier
             return [pf.DefinitionList(pf.DefinitionItem([image], [caption]))]
         else:
             if len(elem.content) > 0:
