@@ -11,7 +11,7 @@ logger = utils.get_logger()
 
 
 class TableCrossRef():
-    def __init__(self, config: Dict) -> None:
+    def __init__(self, config: Dict, enable_link: bool) -> None:
         """コンストラクタ
 
         Args:
@@ -26,6 +26,8 @@ class TableCrossRef():
                     表番号のタイトルのテンプレート
                 - delimiter (str):
                     表番号の区切り
+            enable_link (bool):
+                参照にリンクを張るかどうか
         """
         self.table_number_count_level = int(
             config.get("table_number_count_level", "0"))
@@ -33,6 +35,7 @@ class TableCrossRef():
             config.get("table_title_template", "[表%s]")
         self.delimiter: str = \
             config.get("delimiter", "-")
+        self.enable_link: bool = enable_link
 
         # 参照用のセクション番号を格納する辞書
         self.references: Dict = {}
@@ -54,7 +57,8 @@ class TableCrossRef():
                 セクション番号
         """
         # Table要素のキャプションでなければ終了
-        if not isinstance(utils.get_root_elem(elem), pf.Table):
+        root_elem = utils.get_root_elem(elem)
+        if not isinstance(root_elem, pf.Table):
             return
 
         # キャプションのテキスト情報と表定義の取得
@@ -65,6 +69,9 @@ class TableCrossRef():
         # 参照が定義されていなければ何もしない
         if identifier is None:
             return
+
+        # 親のTable要素にidentifierを設定する
+        root_elem.identifier = identifier
 
         # 表番号の取得
         table_number = self._get_table_number(list_present_section_numbers)
@@ -189,18 +196,27 @@ class TableCrossRef():
         elem.content[0].content = [pf.Str(caption_text)]
 
     def add_reference(self,
-                      key: str,
-                      target: pf.Str) -> None:
+                      key: str) -> pf.Str | pf.Link:
         """参照を上書きするべき対象を一時的に記憶しておく
 
         Args:
             key (str): 参照の目印となるキー
-            target (pf.Str): 上書きするべき項目
+
+        Returns:
+            pf.Str | pf.Link:
+                参照追加後の要素
         """
+        target = pf.Str("")
         self.list_replace_target.append({
             "key": key,
             "target": target,
         })
+
+        if self.enable_link:
+            # 参照先へのリンクを張る
+            return pf.Link(target, url=f"#{key}")
+        else:
+            return target
 
     def replace_reference(self) -> None:
         """参照の上書き"""

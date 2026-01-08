@@ -10,7 +10,7 @@ logger = utils.get_logger()
 
 
 class FigureCrossRef():
-    def __init__(self, config: Dict) -> None:
+    def __init__(self, config: Dict, enable_link: bool) -> None:
         """コンストラクタ
 
         Args:
@@ -26,6 +26,8 @@ class FigureCrossRef():
                     図番号のタイトルのテンプレート
                 - delimiter (str):
                     図番号の区切り
+            enable_link (bool):
+                参照にリンクを張るかどうか
         """
         self.figure_number_count_level: int = int(
             config.get("figure_number_count_level", "0"))
@@ -33,6 +35,7 @@ class FigureCrossRef():
             config.get("figure_title_template", "[図%s]")
         self.delimiter: str = \
             config.get("delimiter", "-")
+        self.enable_link: bool = enable_link
 
         # 参照用のセクション番号を格納する辞書
         self.references: Dict = {}
@@ -85,6 +88,7 @@ class FigureCrossRef():
             caption = caption + " " + self._get_caption(elem)
             caption = pf.Definition(pf.Para(pf.Str(caption)))
             image = elem.content[0].content[0]
+            image.identifier = elem.identifier
             return [pf.DefinitionList(pf.DefinitionItem([image], [caption]))]
         else:
             if len(elem.content) > 0:
@@ -188,18 +192,27 @@ class FigureCrossRef():
         return fig_number
 
     def add_reference(self,
-                      key: str,
-                      target: pf.Str) -> None:
+                      key: str) -> pf.Str | pf.Link:
         """参照を上書きするべき対象を一時的に記憶しておく
 
         Args:
             key (str): 参照の目印となるキー
-            target (pf.Str): 上書きするべき項目
+
+        Returns:
+            pf.Str | pf.Link:
+                参照追加後の要素
         """
+        target = pf.Str("")
         self.list_replace_target.append({
             "key": key,
             "target": target,
         })
+
+        if self.enable_link:
+            # 参照先へのリンクを張る
+            return pf.Link(target, url=f"#{key}")
+        else:
+            return target
 
     def replace_reference(self) -> None:
         """参照の上書き"""

@@ -10,7 +10,7 @@ logger = utils.get_logger()
 
 
 class SectionCrossRef():
-    def __init__(self, config: Dict) -> None:
+    def __init__(self, config: Dict, enable_link: bool) -> None:
         """コンストラクタ
 
         Args:
@@ -26,6 +26,8 @@ class SectionCrossRef():
                     セクション番号の区切り
                 - section_ref_template (list(str)):
                     セクション番号の参照のテンプレート。レベルに応じて配列で設定できる
+            enable_link (bool):
+                参照にリンクを張るかどうか
         """
         self.auto_section: bool = bool(
             config.get("auto_section", False))
@@ -37,6 +39,7 @@ class SectionCrossRef():
             config.get("delimiter", ".")
         self.section_ref_template: List[str] = \
             config.get("section_ref_template", ["第%s章", "%s節", "%s項", "%s目"])
+        self.enable_link: bool = enable_link
 
         # 現在のセクション番号
         self.list_present_section_numbers: List[int] = []
@@ -148,20 +151,33 @@ class SectionCrossRef():
 
     def add_reference(self,
                       key: str,
-                      target: pf.Str,
-                      is_header: bool) -> None:
+                      is_header: bool) -> pf.Str | pf.Link:
         """参照を上書きするべき対象を一時的に記憶しておく
 
         Args:
             key (str): 参照の目印となるキー
-            target (pf.Str): 上書きするべき項目
             is_header (bool): 上書き対象がヘッダーかどうか
+
+        Returns:
+            pf.Str | pf.Link:
+                参照追加後の要素
         """
+        target = pf.Str("")
         self.list_replace_target.append({
             "key": key,
             "target": target,
             "is_header": is_header
         })
+
+        # ヘッダー内の参照なら終了
+        if is_header:
+            return target
+
+        if self.enable_link:
+            # 参照先へのリンクを張る
+            return pf.Link(target, url=f"#{key}")
+        else:
+            return target
 
     def replace_reference(self) -> None:
         """参照の上書き"""

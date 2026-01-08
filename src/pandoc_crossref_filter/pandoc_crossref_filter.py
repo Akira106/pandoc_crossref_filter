@@ -19,18 +19,26 @@ CONFIG_TOP_INSERT_TEXT = f"{CONFIG_ROOT}.top_insert_text"
 
 
 def prepare(doc):
+    # 出力先がWordの場合のみ、相互参照のリンクを実装する
+    # (出力先がMarkdonwやHTML(Markdown Preview Enhancedのプレビュー)の場合、
+    # リンクがうまく動作しないパターンがある)
+    enable_link = doc.format == "docx"
+
     # セクション番号管理
     doc.section_cross_ref = SectionCrossRef(
-        doc.get_metadata(CONFIG_SECTION, {}))
+        doc.get_metadata(CONFIG_SECTION, {}),
+        enable_link)
     # コードブロック管理
     doc.code_block_ref = CodeBlockRef(
         doc.get_metadata(CONFIG_CODE_BLOCK, {}))
     # 図番号管理
     doc.figure_cross_ref = FigureCrossRef(
-        doc.get_metadata(CONFIG_IMAGE, {}))
+        doc.get_metadata(CONFIG_IMAGE, {}),
+        enable_link)
     # 表番号管理
     doc.table_cross_ref = TableCrossRef(
-        doc.get_metadata(CONFIG_TABLE, {}))
+        doc.get_metadata(CONFIG_TABLE, {}),
+        enable_link)
     # 現在のセクション番号
     doc.list_present_section_numbers = []
 
@@ -124,31 +132,27 @@ def action(elem, doc):
     elif isinstance(elem, pf.Cite):
         list_ret_elem = []
         for citation in elem.citations:
-            replace_str = pf.Str("")
             # セクション番号の参照
             if citation.id.startswith("sec:"):
-                root_elem = utils.get_root_elem(elem)
-                doc.section_cross_ref.add_reference(
+                ret_elem = doc.section_cross_ref.add_reference(
                     citation.id,
-                    replace_str,
-                    isinstance(root_elem, pf.Header)
+                    isinstance(utils.get_root_elem(elem), pf.Header)
                 )
-                list_ret_elem.append(replace_str)
+                list_ret_elem.append(ret_elem)
+
             # 図番号の参照
             elif citation.id.startswith("fig:"):
-                doc.figure_cross_ref.add_reference(
+                ret_elem = doc.figure_cross_ref.add_reference(
                     citation.id,
-                    replace_str
                 )
-                list_ret_elem.append(replace_str)
+                list_ret_elem.append(ret_elem)
 
             # 表番号の参照
             elif citation.id.startswith("tbl:"):
-                doc.table_cross_ref.add_reference(
+                ret_elem = doc.table_cross_ref.add_reference(
                     citation.id,
-                    replace_str
                 )
-                list_ret_elem.append(replace_str)
+                list_ret_elem.append(ret_elem)
 
         if len(list_ret_elem) > 0:
             # pf.Citeをpf.Strで置き換える
