@@ -10,7 +10,7 @@ logger = utils.get_logger()
 
 
 class FigureCrossRef():
-    def __init__(self, config: Dict) -> None:
+    def __init__(self, config: Dict, enable_link: bool) -> None:
         """コンストラクタ
 
         Args:
@@ -26,6 +26,8 @@ class FigureCrossRef():
                     図番号のタイトルのテンプレート
                 - delimiter (str):
                     図番号の区切り
+            enable_link (bool):
+                参照にリンクを張るかどうか
         """
         self.figure_number_count_level: int = int(
             config.get("figure_number_count_level", "0"))
@@ -33,6 +35,7 @@ class FigureCrossRef():
             config.get("figure_title_template", "[図%s]")
         self.delimiter: str = \
             config.get("delimiter", "-")
+        self.enable_link: bool = enable_link
 
         # 参照用のセクション番号を格納する辞書
         self.references: Dict = {}
@@ -205,8 +208,11 @@ class FigureCrossRef():
             "target": target,
         })
 
-        # 参照先へのリンクを張る
-        return pf.Link(target, url=f"#{key}")
+        if self.enable_link:
+            # 参照先へのリンクを張る
+            return pf.Link(target, url=f"#{key}")
+        else:
+            return target
 
     def replace_reference(self) -> None:
         """参照の上書き"""

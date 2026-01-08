@@ -11,7 +11,7 @@ logger = utils.get_logger()
 
 
 class TableCrossRef():
-    def __init__(self, config: Dict) -> None:
+    def __init__(self, config: Dict, enable_link: bool) -> None:
         """コンストラクタ
 
         Args:
@@ -26,6 +26,8 @@ class TableCrossRef():
                     表番号のタイトルのテンプレート
                 - delimiter (str):
                     表番号の区切り
+            enable_link (bool):
+                参照にリンクを張るかどうか
         """
         self.table_number_count_level = int(
             config.get("table_number_count_level", "0"))
@@ -33,6 +35,7 @@ class TableCrossRef():
             config.get("table_title_template", "[表%s]")
         self.delimiter: str = \
             config.get("delimiter", "-")
+        self.enable_link: bool = enable_link
 
         # 参照用のセクション番号を格納する辞書
         self.references: Dict = {}
@@ -209,8 +212,11 @@ class TableCrossRef():
             "target": target,
         })
 
-        # 参照先へのリンクを張る
-        return pf.Link(target, url=f"#{key}")
+        if self.enable_link:
+            # 参照先へのリンクを張る
+            return pf.Link(target, url=f"#{key}")
+        else:
+            return target
 
     def replace_reference(self) -> None:
         """参照の上書き"""
