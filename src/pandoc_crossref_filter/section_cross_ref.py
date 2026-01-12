@@ -4,13 +4,18 @@ from typing import List, Dict
 import panflute as pf
 
 from . import utils
+from .output_format import (
+    DOCX,
+    HTML,
+    GFM,
+)
 
 
 logger = utils.get_logger()
 
 
 class SectionCrossRef():
-    def __init__(self, config: Dict, enable_link: bool) -> None:
+    def __init__(self, config: Dict, output_format: int) -> None:
         """コンストラクタ
 
         Args:
@@ -26,8 +31,8 @@ class SectionCrossRef():
                     セクション番号の区切り
                 - section_ref_template (list(str)):
                     セクション番号の参照のテンプレート。レベルに応じて配列で設定できる
-            enable_link (bool):
-                参照にリンクを張るかどうか
+            output_format (int):
+                出力形式
         """
         self.auto_section: bool = bool(
             config.get("auto_section", False))
@@ -39,7 +44,8 @@ class SectionCrossRef():
             config.get("delimiter", ".")
         self.section_ref_template: List[str] = \
             config.get("section_ref_template", ["第%s章", "%s節", "%s項", "%s目"])
-        self.enable_link: bool = enable_link
+        self.output_format: int = output_format
+        self.enable_link = self.output_format in [DOCX, HTML, GFM]
 
         # 現在のセクション番号
         self.list_present_section_numbers: List[int] = []
@@ -47,6 +53,9 @@ class SectionCrossRef():
         self.references: Dict = {}
         # 書き換えるべき項目を記憶する(最後に書き換える)
         self.list_replace_target: List[Dict] = []
+        # GFMフォーマットで使用する、ヘッダーに挿入するHTML要素の辞書
+        # キー：identifier、値：pf.RawHtml要素
+        self.gfm_anchor_elements: Dict = {}
 
     def register_section(self, elem: pf.Header) -> None:
         """セクション番号の登録
@@ -72,6 +81,9 @@ class SectionCrossRef():
             self._insert_section_numbers(elem.content, section_number_str)
         # セクション参照の追加
         self._add_section_identifier(elem.identifier, section_number_str)
+        # GFMフォーマットの場合、アンカータグをヘッダーの前に挿入
+        if self.output_format == GFM:
+            self._create_gfm_anchor(elem.identifier)
 
     def _is_unnumbered(self, classes: List[str]) -> bool:
         """セクション番号を加算しないヘッダーであるか判定する
@@ -148,6 +160,41 @@ class SectionCrossRef():
 
         # 登録
         self.references[identifier] = section_number_str
+
+    def _create_gfm_anchor(self, identifier: str) -> None:
+        """GFMフォーマット用のアンカータグを生成
+
+        Args:
+            identifier (str):
+                ヘッダーのID
+        """
+        if not identifier.startswith("sec:"):
+            return
+
+        # アンカータグのHTML要素を生成
+        anchor_html = f'<a id="{identifier}"></a>'
+        anchor_element = pf.RawBlock(anchor_html, format='html')
+        self.gfm_anchor_elements[identifier] = anchor_element
+
+    def get_gfm_anchor(self, elem: pf.Header) -> pf.RawBlock | None:
+        """GFMフォーマット用のアンカータグを取得
+
+        Args:
+            elem (pf.Header):
+                ヘッダー要素
+
+        Returns:
+            pf.RawBlock | None:
+                アンカータグ
+        """
+        if self.output_format != GFM:
+            return None
+
+        if elem.identifier in self.gfm_anchor_elements:
+            anchor = self.gfm_anchor_elements[elem.identifier]
+            return anchor
+
+        return None
 
     def add_reference(self,
                       key: str,

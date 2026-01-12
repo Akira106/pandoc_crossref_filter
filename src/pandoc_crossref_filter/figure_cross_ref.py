@@ -4,13 +4,18 @@ from typing import List, Dict
 import panflute as pf
 
 from . import utils
+from .output_format import (
+    DOCX,
+    HTML,
+    GFM,
+)
 
 
 logger = utils.get_logger()
 
 
 class FigureCrossRef():
-    def __init__(self, config: Dict, enable_link: bool) -> None:
+    def __init__(self, config: Dict, output_format: int) -> None:
         """コンストラクタ
 
         Args:
@@ -26,8 +31,8 @@ class FigureCrossRef():
                     図番号のタイトルのテンプレート
                 - delimiter (str):
                     図番号の区切り
-            enable_link (bool):
-                参照にリンクを張るかどうか
+            output_format (int):
+                出力形式
         """
         self.figure_number_count_level: int = int(
             config.get("figure_number_count_level", "0"))
@@ -35,7 +40,8 @@ class FigureCrossRef():
             config.get("figure_title_template", "[図%s]")
         self.delimiter: str = \
             config.get("delimiter", "-")
-        self.enable_link: bool = enable_link
+        self.output_format: int = output_format
+        self.enable_link: bool = self.output_format in [DOCX, HTML, GFM]
 
         # 参照用のセクション番号を格納する辞書
         self.references: Dict = {}
