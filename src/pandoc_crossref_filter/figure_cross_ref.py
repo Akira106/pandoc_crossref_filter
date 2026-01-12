@@ -86,7 +86,10 @@ class FigureCrossRef():
         fig_number = self._get_figure_number(list_present_section_numbers)
 
         # identifierの登録
-        self._add_figure_identifier(elem.identifier, fig_number)
+        normalize_identifier = \
+            self._add_figure_identifier(elem.identifier, fig_number)
+        if normalize_identifier:
+            elem.identifier = normalize_identifier
 
         # キャプションを追加する
         caption = self.figure_title_template % fig_number
@@ -150,7 +153,7 @@ class FigureCrossRef():
 
     def _add_figure_identifier(self,
                                identifier: str,
-                               fig_number: str) -> None:
+                               fig_number: str) -> str:
         """図参照の追加
 
         Args:
@@ -159,13 +162,18 @@ class FigureCrossRef():
             fig_number (str):
                 図番号
         """
+        # identifierを正規化
+        normalized_identifier = utils.normalize_identifier(identifier)
+
         # 重複登録はエラーで落とす
-        if identifier in self.references:
+        if normalized_identifier in self.references:
             logger.error(f"Duplicate identifier: '{identifier}'")
             sys.exit(1)
 
         # 登録
-        self.references[identifier] = fig_number
+        self.references[normalized_identifier] = fig_number
+
+        return normalized_identifier
 
     def _get_figure_number(self,
                            list_present_section_numbers: List[int]) -> str:
@@ -210,15 +218,18 @@ class FigureCrossRef():
             pf.Str | pf.Link:
                 参照追加後の要素
         """
+        # keyを正規化
+        normalized_key = utils.normalize_identifier(key)
+
         target = pf.Str("")
         self.list_replace_target.append({
-            "key": key,
+            "key": normalized_key,
             "target": target,
         })
 
         if self.enable_link:
             # 参照先へのリンクを張る
-            return pf.Link(target, url=f"#{key}")
+            return pf.Link(target, url=f"#{normalized_key}")
         else:
             return target
 
@@ -239,9 +250,12 @@ class FigureCrossRef():
             str:
                 セクション番号の文字列
         """
+        # keyを正規化
+        normalized_key = utils.normalize_identifier(key)
+
         # 参照キーが見つからない
-        if key not in self.references:
+        if normalized_key not in self.references:
             logger.error(f"No such reference: '{key}'.")
             sys.exit(1)
-        fig_number = self.figure_title_template % self.references[key]
+        fig_number = self.figure_title_template % self.references[normalized_key]
         return fig_number

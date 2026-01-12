@@ -59,3 +59,23 @@ def joinpath(path1: str, path2: str) -> str:
     if not path1.endswith(delimiter):
         path1 += delimiter
     return path1 + path2
+
+
+def normalize_identifier(identifier: str) -> str:
+    """identifierを正規化する（コロンをハイフンに置き換え）
+
+    GFMの場合、リンクのURLの中にコロンを使用できないため、
+    ハイフンで置き換える必要がある
+
+    そもそも、入力のMarkdownの中でコロンの代わりにハイフンを使わせてもよいが、
+    有名な類似OSSであるpandoc_crossrefの記法と異なってしまうため、
+    入力の仕様は変えずに、出力だけを変えて対応する
+
+    Args:
+        identifier (str):
+            元のidentifier（例：sec:test_section、tbl:test_table、fig:test_figure）
+
+    Returns:
+        str: 正規化されたidentifier（例：sec-test_section、tbl-test_table、fig-test_figure）
+    """
+    return identifier.replace(":", "-")

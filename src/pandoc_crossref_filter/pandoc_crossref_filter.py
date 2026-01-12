@@ -23,10 +23,6 @@ def prepare(doc):
     # 出力フォーマット
     output_format = get_output_format(doc.format)
 
-    # 仮の値
-    # 最終的にはbooleanではなく、output_formatの値で条件分岐を実装する
-    enable_link = False
-
     # セクション番号管理
     doc.section_cross_ref = SectionCrossRef(
         doc.get_metadata(CONFIG_SECTION, {}),
