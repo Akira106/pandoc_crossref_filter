@@ -19,7 +19,11 @@ pandoc_crossref_filter:
 - Pandocのカスタムフィルターとして動作します。
 - VSCodeのプラグインである、Markdown Preview Enhancedとの連携が可能です。
 - PlantUML/Mermaidの図の中にも引用を挿入することができます。
-- 表の中で改行することができます。pandocを使ってMarkdownをWordファイルに変換したときにも、改行が維持されます。
+- 表の中で改行することができます。Pandocを使ってMarkdownをWordファイルに変換したときにも、改行が維持されます。
+- 参照元にジャンプできるリンクを自動で付与します。ただし、現在はPandocの出力フォーマットが以下の場合のみ対応しています。
+  - Word(docx)
+  - HTML
+  - GitHub Flavored Markdown(GFM)
 
 <br>
 

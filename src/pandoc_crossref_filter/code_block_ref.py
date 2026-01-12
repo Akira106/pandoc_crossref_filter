@@ -80,9 +80,10 @@ class CodeBlockRef():
                 if identifier is None:
                     return None
 
+                anchor = pf.RawBlock(f'<a id="{identifier}"></a>', format='html')
                 fig_num = pf.Str("")  # figure_cross_refで書き換える
                 caption = pf.Para(fig_num, pf.Space, pf.Str(caption))
-                return [caption, identifier]
+                return [anchor, caption, identifier]
 
             # エキスポート時は画像で返す
             # (上位側でFigureCrossRefに登録する)

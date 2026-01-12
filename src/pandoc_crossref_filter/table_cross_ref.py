@@ -5,13 +5,18 @@ import re
 import panflute as pf
 
 from . import utils
+from .output_format import (
+    DOCX,
+    HTML,
+    GFM,
+)
 
 
 logger = utils.get_logger()
 
 
 class TableCrossRef():
-    def __init__(self, config: Dict, enable_link: bool) -> None:
+    def __init__(self, config: Dict, output_format: int = 0) -> None:
         """コンストラクタ
 
         Args:
@@ -26,8 +31,8 @@ class TableCrossRef():
                     表番号のタイトルのテンプレート
                 - delimiter (str):
                     表番号の区切り
-            enable_link (bool):
-                参照にリンクを張るかどうか
+            output_format (int):
+                出力形式
         """
         self.table_number_count_level = int(
             config.get("table_number_count_level", "0"))
@@ -35,7 +40,8 @@ class TableCrossRef():
             config.get("table_title_template", "[表%s]")
         self.delimiter: str = \
             config.get("delimiter", "-")
-        self.enable_link: bool = enable_link
+        self.output_format: int = output_format
+        self.enable_link: bool = self.output_format in [DOCX, HTML, GFM]
 
         # 参照用のセクション番号を格納する辞書
         self.references: Dict = {}
@@ -43,6 +49,9 @@ class TableCrossRef():
         self.list_replace_target: List[Dict] = []
         # 表番号の連番をカウントする辞書
         self.dict_table_number_increment: Dict = {}
+        # GFMフォーマットで使用する、表の前に挿入するHTML要素の辞書
+        # キー：identifier、値：pf.RawBlock要素
+        self.gfm_anchor_elements: Dict = {}
 
     def register_table(self,
                        elem: pf.Caption,
@@ -84,6 +93,10 @@ class TableCrossRef():
         new_caption_text = \
             self.table_title_template % table_number + " " + new_caption_text
         self._set_caption_text(elem, new_caption_text)
+
+        # GFMフォーマットの場合、アンカータグを生成
+        if self.output_format == GFM:
+            self._create_gfm_anchor(identifier)
 
     def _get_caption_text(self, elem: pf.Caption) -> str | None:
         """キャプションのテキスト情報を取得する
@@ -152,6 +165,47 @@ class TableCrossRef():
 
         # 登録
         self.references[identifier] = table_number
+
+    def _create_gfm_anchor(self, identifier: str) -> None:
+        """GFMフォーマット用のアンカータグを生成
+
+        Args:
+            identifier (str):
+                表のID
+        """
+        if not identifier.startswith("tbl:"):
+            logger.error(f"Invalid table identifier for GFM anchor: '{identifier}'")
+            return
+
+        # アンカータグのHTML要素を生成
+        anchor_html = f'<a id="{identifier}"></a>'
+        anchor_element = pf.RawBlock(anchor_html, format='html')
+        self.gfm_anchor_elements[identifier] = anchor_element
+
+    def get_gfm_anchor(self, elem: pf.Table) -> pf.RawBlock | None:
+        """GFMフォーマット用のアンカータグを取得
+
+        Args:
+            elem (pf.Table):
+                表要素
+
+        Returns:
+            pf.RawBlock | None:
+                アンカータグ
+        """
+        if self.output_format != GFM:
+            return None
+
+        if elem.identifier in self.gfm_anchor_elements:
+            anchor = self.gfm_anchor_elements[elem.identifier]
+            # GFMの場合、Table要素にidentifierが設定されたままだと、
+            # 出力時にidentifierが付加され、GitHub上ではそれが表示されてしまう。
+            # そこで、ここでidentifierを空にする。
+            elem.identifier = ""
+
+            return anchor
+
+        return None
 
     def _get_table_number(self,
                           list_present_section_numbers: List[int]) -> str:
