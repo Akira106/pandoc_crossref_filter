@@ -79,24 +79,24 @@ class TableCrossRef():
         if identifier is None:
             return
 
-        if self.enable_link:
-            # 親のTable要素に参照元(identifier)を設定する
-            root_elem.identifier = identifier
+        # GFMフォーマットの場合、アンカータグを生成
+        if self.output_format == GFM:
+            self._create_gfm_anchor(identifier)
 
         # 表番号の取得
         table_number = self._get_table_number(list_present_section_numbers)
 
         # identifierの登録
-        self._add_table_ref(identifier, table_number)
+        normalize_identifier = self._add_table_ref(identifier, table_number)
+
+        if self.enable_link and normalize_identifier:
+            # 親のTable要素に参照元(identifier)を設定する
+            root_elem.identifier = normalize_identifier
 
         # キャプションに表番号を追加する
         new_caption_text = \
             self.table_title_template % table_number + " " + new_caption_text
         self._set_caption_text(elem, new_caption_text)
-
-        # GFMフォーマットの場合、アンカータグを生成
-        if self.output_format == GFM:
-            self._create_gfm_anchor(identifier)
 
     def _get_caption_text(self, elem: pf.Caption) -> str | None:
         """キャプションのテキスト情報を取得する
@@ -149,7 +149,7 @@ class TableCrossRef():
 
     def _add_table_ref(self,
                        identifier: str,
-                       table_number: str) -> None:
+                       table_number: str) -> str:
         """表参照の追加
 
         Args:
@@ -158,13 +158,18 @@ class TableCrossRef():
             ftable_number (str):
                 表番号
         """
+        # identifierを正規化
+        normalized_identifier = utils.normalize_identifier(identifier)
+
         # 重複登録はエラーで落とす
-        if identifier in self.references:
+        if normalized_identifier in self.references:
             logger.error(f"Duplicate identifier: '{identifier}'")
             sys.exit(1)
 
         # 登録
-        self.references[identifier] = table_number
+        self.references[normalized_identifier] = table_number
+
+        return normalized_identifier
 
     def _create_gfm_anchor(self, identifier: str) -> None:
         """GFMフォーマット用のアンカータグを生成
@@ -177,10 +182,12 @@ class TableCrossRef():
             logger.error(f"Invalid table identifier for GFM anchor: '{identifier}'")
             return
 
+        # identifierを正規化
+        normalized_identifier = utils.normalize_identifier(identifier)
         # アンカータグのHTML要素を生成
-        anchor_html = f'<a id="{identifier}"></a>'
+        anchor_html = f'<a id="{normalized_identifier}"></a>'
         anchor_element = pf.RawBlock(anchor_html, format='html')
-        self.gfm_anchor_elements[identifier] = anchor_element
+        self.gfm_anchor_elements[normalized_identifier] = anchor_element
 
     def get_gfm_anchor(self, elem: pf.Table) -> pf.RawBlock | None:
         """GFMフォーマット用のアンカータグを取得
@@ -261,15 +268,18 @@ class TableCrossRef():
             pf.Str | pf.Link:
                 参照追加後の要素
         """
+        # keyを正規化
+        normalized_key = utils.normalize_identifier(key)
+
         target = pf.Str("")
         self.list_replace_target.append({
-            "key": key,
+            "key": normalized_key,
             "target": target,
         })
 
         if self.enable_link:
             # 参照先へのリンクを張る
-            return pf.Link(target, url=f"#{key}")
+            return pf.Link(target, url=f"#{normalized_key}")
         else:
             return target
 
@@ -290,9 +300,12 @@ class TableCrossRef():
             str:
                 セクション番号の文字列
         """
+        # keyを正規化
+        normalized_key = utils.normalize_identifier(key)
+
         # 参照キーが見つからない
-        if key not in self.references:
+        if normalized_key not in self.references:
             logger.error(f"No such reference: '{key}'.")
             sys.exit(1)
-        table_number = self.table_title_template % self.references[key]
+        table_number = self.table_title_template % self.references[normalized_key]
         return table_number

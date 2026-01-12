@@ -98,7 +98,7 @@ $ playwright install chromium
 
 Markdown Preview Enhancedのプレビュー画面で、本フィルターの機能をプレビューしたい場合は、以下の設定が必要です。
 
-<a id="tbl:tbl_mpe_preview"></a>
+<a id="tbl-tbl_mpe_preview"></a>
 
 | VSCodeの設定項目 | 設定値 |
 |:---|:---|
@@ -113,7 +113,7 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
 また、Markdown Preview EnhancedでPlantUMLを使用する場合は、以下の**いずれか**の設定が必要です。
 
-<a id="tbl:tbl_mpe_plantuml"></a>
+<a id="tbl-tbl_mpe_plantuml"></a>
 
 | VSCodeの設定項目 | 設定値 |
 |:---|:---|
@@ -124,7 +124,7 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
 ## 3. 使い方
 
-<a id="sec:sec_insert"></a>
+<a id="sec-sec_insert"></a>
 
 ### 3.1. 参照の挿入方法
 
@@ -171,7 +171,7 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
     @import "test.csv"
     : importされた表{#tbl:import_tbl}
 
-<a id="sec:sec_puml_insert"></a>
+<a id="sec-sec_puml_insert"></a>
 
 #### 3.1.4. PlantUMLへの図番号の挿入
 
@@ -183,7 +183,7 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
 - 出力画像のファイル名：`'filename=ZZZ`
 
 **※1**  
-\`\`\`plantuml\`\`\`という表記でもPandoc単体なら動作しますが、PlantUMLの中で[3.2節](#sec:sec_cite)に示す引用を使用した場合、Markdown Preview Enhancedとの連携が正しく動作しなくなります。
+\`\`\`plantuml\`\`\`という表記でもPandoc単体なら動作しますが、PlantUMLの中で[3.2節](#sec-sec_cite)に示す引用を使用した場合、Markdown Preview Enhancedとの連携が正しく動作しなくなります。
 
 `例`
 
@@ -195,7 +195,7 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
     Bob -> Alice : hello
     ```
 
-<a id="sec:sec_mermaid_insert"></a>
+<a id="sec-sec_mermaid_insert"></a>
 
 #### 3.1.5. Mermaidへの図番号の挿入
 
@@ -207,7 +207,7 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
 - 出力画像のファイル名：`%%filename=ZZZ`
 
 **※1**  
-\`\`\`mermaid\`\`\`という表記でもPandoc単体なら動作しますが、Mermaidの中で[3.2節](#sec:sec_cite)に示す引用を使用した場合、Markdown Preview Enhancedとの連携が正しく動作しなくなります。
+\`\`\`mermaid\`\`\`という表記でもPandoc単体なら動作しますが、Mermaidの中で[3.2節](#sec-sec_cite)に示す引用を使用した場合、Markdown Preview Enhancedとの連携が正しく動作しなくなります。
 
 `例`
 
@@ -219,7 +219,7 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
       Bob ->> Alice : hello
     ```
 
-<a id="sec:sec_cite"></a>
+<a id="sec-sec_cite"></a>
 
 ### 3.2. 参照の引用
 
@@ -230,9 +230,9 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
 - `[@tbl:XXX]`
 
 で引用することができます。  
-(`XXX`は、[3.1節](#sec:sec_insert)で挿入したものに対応します)
+(`XXX`は、[3.1節](#sec-sec_insert)で挿入したものに対応します)
 
-引用は、本文、箇条書き、表、ヘッダー([3.4.2項](#sec:sec_cite_in_header)) 、コードブロックの中(PlantUML/Mermaidの図の中、[3.4.3項](#sec:sec_cite_in_puml))で使用することができます。
+引用は、本文、箇条書き、表、ヘッダー([3.4.2項](#sec-sec_cite_in_header)) 、コードブロックの中(PlantUML/Mermaidの図の中、[3.4.3項](#sec-sec_cite_in_puml))で使用することができます。
 
 ### 3.3. 設定値
 
@@ -252,7 +252,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
 - `section`の設定値
 
-<a id="tbl:tbl_config_section"></a>
+<a id="tbl-tbl_config_section"></a>
 
 | 設置値 | 型 | デフォルト値 | 内容 |
 |:---|:---|:---|:---|
@@ -266,7 +266,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
 - `figure`の設定値
 
-<a id="tbl:tbl_config_figure"></a>
+<a id="tbl-tbl_config_figure"></a>
 
 <table>
 <caption>[表3-2] 図番号の設定項目</caption>
@@ -312,7 +312,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
 - `table`の設定値
 
-<a id="tbl:tbl_config_table"></a>
+<a id="tbl-tbl_config_table"></a>
 
 <table>
 <caption>[表3-3] 表番号の設定項目</caption>
@@ -358,7 +358,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
 - `code_block`の設定値
 
-<a id="tbl:tbl_config_code_block"></a>
+<a id="tbl-tbl_config_code_block"></a>
 
 | 設置値 | 型 | デフォルト値 | 内容 |
 |:---|:---|:---|:---|
@@ -376,19 +376,19 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
     # このヘッダーはセクション番号のカウントから除外される{.un}
 
-<a id="sec:sec_cite_in_header"></a>
+<a id="sec-sec_cite_in_header"></a>
 
 #### 3.4.2. ヘッダー内のセクション番号の引用
 
 ヘッダー内で、他のセクション番号を引用することができます。  
 例えば、セクション番号のカウントを、途中から数字からアルファベットに変更したい場合など、細かい動作を指定するのに有効です。
 
-<a id="sec:sec_cite_in_puml"></a>
+<a id="sec-sec_cite_in_puml"></a>
 
 #### 3.4.3. PlantUML/Mermaid内の相互参照
 
-PlantUML/Mermaidのコードブロック内で、[3.2節](#sec:sec_cite)の引用を使用することが可能です。  
-ただし、Markdown Preview Enhancedとの連携を行う場合は、[3.1.4項](#sec:sec_puml_insert)に記載したように、コードブロックの先頭を`{.plantuml}`/`{.mermaid}`で開始する必要があります。
+PlantUML/Mermaidのコードブロック内で、[3.2節](#sec-sec_cite)の引用を使用することが可能です。  
+ただし、Markdown Preview Enhancedとの連携を行う場合は、[3.1.4項](#sec-sec_puml_insert)に記載したように、コードブロックの先頭を`{.plantuml}`/`{.mermaid}`で開始する必要があります。
 
 ##### 補足
 
@@ -408,7 +408,7 @@ Markdownで改行する場合は、末尾にスペースを2つ付ける必要�
 
 PandocまたはMarkdown Preview Enhancedの機能を使って、相互参照を解決したファイルをエクスポートすることができます。
 
-<a id="sec:sec_gfm_export"></a>
+<a id="sec-sec_gfm_export"></a>
 
 #### 3.5.1. GitHub Flavored Markdown(GFM)への変換
 
@@ -434,7 +434,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
 #### 3.5.2. Wordファイルへの変換
 
-[3.5.1項](#sec:sec_gfm_export)と同様に、`pandoc_args`の設定に本フィルターを追加することで、エクスポートが可能になります。  
+[3.5.1項](#sec-sec_gfm_export)と同様に、`pandoc_args`の設定に本フィルターを追加することで、エクスポートが可能になります。  
 ※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。
 
 `例`

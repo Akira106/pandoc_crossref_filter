@@ -65,7 +65,7 @@ pandoc_crossref_filter:
 特殊な記法ですが、plantumlで作成した図も相互参照できます。
 
 ```{.plantuml}
-'filename=test1.svg
+'filename=test1.png
 '#fig:puml1
 'caption=処理Xのシーケンス図
 
@@ -81,7 +81,7 @@ B --> A: 応答
 <br>
 
 ```{.plantuml}
-'filename=test2.svg
+'filename=test2.png
 '#fig:puml2
 'caption=処理Xの詳細
 
@@ -99,7 +99,7 @@ C --> B: 応答
 [@fig:test_mermaid]は、Mermaidで作成しています。
 
 ```{.mermaid}
-%%filename=test_mermaid.svg
+%%filename=test_mermaid.png
 %%caption=Mermaidのテスト
 %%#fig:test_mermaid
 sequenceDiagram
