@@ -4,18 +4,13 @@ from typing import List, Dict
 import panflute as pf
 
 from . import utils
-from .output_format import (
-    DOCX,
-    HTML,
-    GFM,
-)
 
 
 logger = utils.get_logger()
 
 
 class SectionCrossRef():
-    def __init__(self, config: Dict, output_format: int) -> None:
+    def __init__(self, config: Dict, enable_link: bool) -> None:
         """コンストラクタ
 
         Args:
@@ -31,8 +26,8 @@ class SectionCrossRef():
                     セクション番号の区切り
                 - section_ref_template (list(str)):
                     セクション番号の参照のテンプレート。レベルに応じて配列で設定できる
-            output_format (int):
-                出力形式
+            enable_link (bool):
+                参照にリンクを張るかどうか
         """
         self.auto_section: bool = bool(
             config.get("auto_section", False))
@@ -44,8 +39,7 @@ class SectionCrossRef():
             config.get("delimiter", ".")
         self.section_ref_template: List[str] = \
             config.get("section_ref_template", ["第%s章", "%s節", "%s項", "%s目"])
-        self.output_format: int = output_format
-        self.enable_link = self.output_format in [DOCX, HTML, GFM]
+        self.enable_link: bool = enable_link
 
         # 現在のセクション番号
         self.list_present_section_numbers: List[int] = []
@@ -53,9 +47,6 @@ class SectionCrossRef():
         self.references: Dict = {}
         # 書き換えるべき項目を記憶する(最後に書き換える)
         self.list_replace_target: List[Dict] = []
-        # GFMフォーマットで使用する、ヘッダーに挿入するHTML要素の辞書
-        # キー：identifier、値：pf.RawHtml要素
-        self.gfm_anchor_elements: Dict = {}
 
     def register_section(self, elem: pf.Header) -> None:
         """セクション番号の登録
@@ -79,13 +70,8 @@ class SectionCrossRef():
         # 元のヘッダー内容の前にセクション番号を追加
         if self.auto_section:
             self._insert_section_numbers(elem.content, section_number_str)
-        # GFMフォーマットの場合、アンカータグをヘッダーの前に挿入
-        if self.output_format == GFM:
-            self._create_gfm_anchor(elem.identifier)
         # セクション参照の追加
-        normalize_identifier = self._add_section_identifier(elem.identifier, section_number_str)
-        if normalize_identifier:
-            elem.identifier = normalize_identifier
+        self._add_section_identifier(elem.identifier, section_number_str)
 
     def _is_unnumbered(self, classes: List[str]) -> bool:
         """セクション番号を加算しないヘッダーであるか判定する
@@ -142,7 +128,7 @@ class SectionCrossRef():
 
     def _add_section_identifier(self,
                                 identifier: str,
-                                section_number_str: str) -> str:
+                                section_number_str: str) -> None:
         """セクション参照の追加
 
         Args:
@@ -155,55 +141,13 @@ class SectionCrossRef():
         if identifier.startswith("sec:") is False:
             return
 
-        # identifierを正規化
-        normalized_identifier = utils.normalize_identifier(identifier)
-
         # 重複登録はエラーで落とす
-        if normalized_identifier in self.references:
+        if identifier in self.references:
             logger.error(f"Duplicate identifier: '{identifier}'")
             sys.exit(1)
 
         # 登録
-        self.references[normalized_identifier] = section_number_str
-
-        return normalized_identifier
-
-    def _create_gfm_anchor(self, identifier: str) -> None:
-        """GFMフォーマット用のアンカータグを生成
-
-        Args:
-            identifier (str):
-                ヘッダーのID
-        """
-        if not identifier.startswith("sec:"):
-            return
-
-        # identifierを正規化
-        normalized_identifier = utils.normalize_identifier(identifier)
-        # アンカータグのHTML要素を生成
-        anchor_html = f'<a id="{normalized_identifier}"></a>'
-        anchor_element = pf.RawBlock(anchor_html, format='html')
-        self.gfm_anchor_elements[normalized_identifier] = anchor_element
-
-    def get_gfm_anchor(self, elem: pf.Header) -> pf.RawBlock | None:
-        """GFMフォーマット用のアンカータグを取得
-
-        Args:
-            elem (pf.Header):
-                ヘッダー要素
-
-        Returns:
-            pf.RawBlock | None:
-                アンカータグ
-        """
-        if self.output_format != GFM:
-            return None
-
-        if elem.identifier in self.gfm_anchor_elements:
-            anchor = self.gfm_anchor_elements[elem.identifier]
-            return anchor
-
-        return None
+        self.references[identifier] = section_number_str
 
     def add_reference(self,
                       key: str,
@@ -218,12 +162,9 @@ class SectionCrossRef():
             pf.Str | pf.Link:
                 参照追加後の要素
         """
-        # keyを正規化
-        normalized_key = utils.normalize_identifier(key)
-
         target = pf.Str("")
         self.list_replace_target.append({
-            "key": normalized_key,
+            "key": key,
             "target": target,
             "is_header": is_header
         })
@@ -234,7 +175,7 @@ class SectionCrossRef():
 
         if self.enable_link:
             # 参照先へのリンクを張る
-            return pf.Link(target, url=f"#{normalized_key}")
+            return pf.Link(target, url=f"#{key}")
         else:
             return target
 
@@ -257,15 +198,12 @@ class SectionCrossRef():
             str:
                 セクション番号の文字列
         """
-        # keyを正規化
-        normalized_key = utils.normalize_identifier(key)
-
         # 参照キーが見つからない
-        if normalized_key not in self.references:
+        if key not in self.references:
             logger.error(f"No such reference: '{key}'.")
             sys.exit(1)
 
-        section_number_str = self.references[normalized_key]
+        section_number_str = self.references[key]
         # ヘッダー内の引用なら、セクション番号をそのまま返す
         if is_header is True:
             return section_number_str

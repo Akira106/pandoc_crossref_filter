@@ -4,18 +4,13 @@ from typing import List, Dict
 import panflute as pf
 
 from . import utils
-from .output_format import (
-    DOCX,
-    HTML,
-    GFM,
-)
 
 
 logger = utils.get_logger()
 
 
 class FigureCrossRef():
-    def __init__(self, config: Dict, output_format: int) -> None:
+    def __init__(self, config: Dict, enable_link: bool) -> None:
         """コンストラクタ
 
         Args:
@@ -31,8 +26,8 @@ class FigureCrossRef():
                     図番号のタイトルのテンプレート
                 - delimiter (str):
                     図番号の区切り
-            output_format (int):
-                出力形式
+            enable_link (bool):
+                参照にリンクを張るかどうか
         """
         self.figure_number_count_level: int = int(
             config.get("figure_number_count_level", "0"))
@@ -40,8 +35,7 @@ class FigureCrossRef():
             config.get("figure_title_template", "[図%s]")
         self.delimiter: str = \
             config.get("delimiter", "-")
-        self.output_format: int = output_format
-        self.enable_link: bool = self.output_format in [DOCX, HTML, GFM]
+        self.enable_link: bool = enable_link
 
         # 参照用のセクション番号を格納する辞書
         self.references: Dict = {}
@@ -86,10 +80,7 @@ class FigureCrossRef():
         fig_number = self._get_figure_number(list_present_section_numbers)
 
         # identifierの登録
-        normalize_identifier = \
-            self._add_figure_identifier(elem.identifier, fig_number)
-        if normalize_identifier:
-            elem.identifier = normalize_identifier
+        self._add_figure_identifier(elem.identifier, fig_number)
 
         # キャプションを追加する
         caption = self.figure_title_template % fig_number
@@ -153,7 +144,7 @@ class FigureCrossRef():
 
     def _add_figure_identifier(self,
                                identifier: str,
-                               fig_number: str) -> str:
+                               fig_number: str) -> None:
         """図参照の追加
 
         Args:
@@ -162,18 +153,13 @@ class FigureCrossRef():
             fig_number (str):
                 図番号
         """
-        # identifierを正規化
-        normalized_identifier = utils.normalize_identifier(identifier)
-
         # 重複登録はエラーで落とす
-        if normalized_identifier in self.references:
+        if identifier in self.references:
             logger.error(f"Duplicate identifier: '{identifier}'")
             sys.exit(1)
 
         # 登録
-        self.references[normalized_identifier] = fig_number
-
-        return normalized_identifier
+        self.references[identifier] = fig_number
 
     def _get_figure_number(self,
                            list_present_section_numbers: List[int]) -> str:
@@ -218,18 +204,15 @@ class FigureCrossRef():
             pf.Str | pf.Link:
                 参照追加後の要素
         """
-        # keyを正規化
-        normalized_key = utils.normalize_identifier(key)
-
         target = pf.Str("")
         self.list_replace_target.append({
-            "key": normalized_key,
+            "key": key,
             "target": target,
         })
 
         if self.enable_link:
             # 参照先へのリンクを張る
-            return pf.Link(target, url=f"#{normalized_key}")
+            return pf.Link(target, url=f"#{key}")
         else:
             return target
 
@@ -250,12 +233,9 @@ class FigureCrossRef():
             str:
                 セクション番号の文字列
         """
-        # keyを正規化
-        normalized_key = utils.normalize_identifier(key)
-
         # 参照キーが見つからない
-        if normalized_key not in self.references:
+        if key not in self.references:
             logger.error(f"No such reference: '{key}'.")
             sys.exit(1)
-        fig_number = self.figure_title_template % self.references[normalized_key]
+        fig_number = self.figure_title_template % self.references[key]
         return fig_number

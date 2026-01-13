@@ -5,7 +5,6 @@ from .section_cross_ref import SectionCrossRef
 from .figure_cross_ref import FigureCrossRef
 from .table_cross_ref import TableCrossRef
 from .code_block_ref import CodeBlockRef
-from .output_format import get_output_format
 
 
 logger = utils.get_logger()
@@ -20,24 +19,26 @@ CONFIG_TOP_INSERT_TEXT = f"{CONFIG_ROOT}.top_insert_text"
 
 
 def prepare(doc):
-    # 出力フォーマット
-    output_format = get_output_format(doc.format)
+    # 出力先がWordの場合のみ、相互参照のリンクを実装する
+    # (出力先がMarkdonwやHTML(Markdown Preview Enhancedのプレビュー)の場合、
+    # リンクがうまく動作しないパターンがある)
+    enable_link = doc.format == "docx"
 
     # セクション番号管理
     doc.section_cross_ref = SectionCrossRef(
         doc.get_metadata(CONFIG_SECTION, {}),
-        output_format)
+        enable_link)
     # コードブロック管理
     doc.code_block_ref = CodeBlockRef(
         doc.get_metadata(CONFIG_CODE_BLOCK, {}))
     # 図番号管理
     doc.figure_cross_ref = FigureCrossRef(
         doc.get_metadata(CONFIG_IMAGE, {}),
-        output_format)
+        enable_link)
     # 表番号管理
     doc.table_cross_ref = TableCrossRef(
         doc.get_metadata(CONFIG_TABLE, {}),
-        output_format)
+        enable_link)
     # 現在のセクション番号
     doc.list_present_section_numbers = []
 
@@ -47,7 +48,6 @@ def prepare(doc):
         logger.error(top_insert_text)
         toc = pf.RawBlock(top_insert_text, format='markdown')
         doc.content.insert(0, toc)
-
 
 def action(elem, doc):
     """
@@ -88,11 +88,6 @@ def action(elem, doc):
         doc.list_present_section_numbers = \
             doc.section_cross_ref.get_present_section_numbers()
 
-        # GFMフォーマットの場合、ヘッダーの前にアンカータグを挿入
-        anchor = doc.section_cross_ref.get_gfm_anchor(elem)
-        if anchor is not None:
-            return [anchor, elem]
-
     # コードブロック
     elif isinstance(elem, pf.CodeBlock):
         # コードブロック中の参照を探して一時記憶しておく
@@ -112,28 +107,20 @@ def action(elem, doc):
 
         # Markdown Preview Enhancedの場合は、図番号をfigure_cross_refに管理させる
         else:
-            anchor = ret[0]
-            caption = ret[1]
-            identifier = ret[2]
+            caption = ret[0]
+            identifier = ret[1]
             doc.figure_cross_ref.register_external_caption(
                 caption,
                 identifier,
                 doc.list_present_section_numbers
             )
-            return [anchor, elem, caption]
+            return [elem, caption]
 
     # 画像
     elif isinstance(elem, (pf.Figure, pf.Image)):
         image = doc.figure_cross_ref.register_figure(
             elem, doc.list_present_section_numbers)
         return image
-
-    # 表
-    elif isinstance(elem, pf.Table):
-        # GFMフォーマットの場合、表の前にアンカータグを挿入
-        anchor = doc.table_cross_ref.get_gfm_anchor(elem)
-        if anchor is not None:
-            return [anchor, elem]
 
     # 表(のキャプション)
     elif isinstance(elem, pf.Caption):
