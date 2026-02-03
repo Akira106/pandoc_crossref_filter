@@ -59,3 +59,21 @@ def joinpath(path1: str, path2: str) -> str:
     if not path1.endswith(delimiter):
         path1 += delimiter
     return path1 + path2
+
+
+def split_key_title(key: str) -> tuple[str, bool]:
+    """キーとタイトルを分割する
+
+    Args:
+        key (str):
+            末尾に"+title"という文字を含むかもしれない参照キー
+
+    Returns:
+        str: キー部分
+        bool: +titleという文字を含んでいるかどうか
+    """
+    key_parts = key.rsplit("+title", maxsplit=1)
+    if len(key_parts) == 2:
+        return key_parts[0], True
+    else:
+        return key, False

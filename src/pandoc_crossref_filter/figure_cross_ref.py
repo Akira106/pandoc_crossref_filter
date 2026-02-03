@@ -37,8 +37,10 @@ class FigureCrossRef():
             config.get("delimiter", "-")
         self.enable_link: bool = enable_link
 
-        # 参照用のセクション番号を格納する辞書
+        # 参照用の図番号を格納する辞書
         self.references: Dict = {}
+        # 参照用の図のタイトルを格納する辞書
+        self.references_title: Dict = {}
         # 書き換えるべき項目を記憶する(最後に書き換える)
         self.list_replace_target: List[Dict] = []
         # 図番号の連番をカウントする辞書
@@ -79,23 +81,27 @@ class FigureCrossRef():
         # 図番号の取得
         fig_number = self._get_figure_number(list_present_section_numbers)
 
+        # 図タイトルの取得
+        figure_title = ""
+        if isinstance(elem, pf.Figure):
+            figure_title = self._get_caption(elem)
+        else:
+            figure_title = pf.stringify(elem.content)
+
         # identifierの登録
-        self._add_figure_identifier(elem.identifier, fig_number)
+        self._add_figure_identifier(elem.identifier, fig_number, figure_title)
 
         # キャプションを追加する
-        caption = self.figure_title_template % fig_number
+        caption_text = self.figure_title_template % fig_number + " " + figure_title
         if isinstance(elem, pf.Figure):
-            caption = caption + " " + self._get_caption(elem)
-            caption = pf.Definition(pf.Para(pf.Str(caption)))
+            caption = pf.Definition(pf.Para(pf.Str(caption_text)))
             image = elem.content[0].content[0]
             if self.enable_link:
                 # 参照元の定義
                 image.identifier = elem.identifier
             return [pf.DefinitionList(pf.DefinitionItem([image], [caption]))]
         else:
-            if len(elem.content) > 0:
-                caption += " " + elem.content[0].text
-            caption = pf.Str(caption)
+            caption = pf.Str(caption_text)
             image = elem
             return [image, pf.Str("\n\n: "), caption]
 
@@ -136,7 +142,7 @@ class FigureCrossRef():
         fig_number = self._get_figure_number(list_present_section_numbers)
 
         # identifierの登録
-        self._add_figure_identifier(identifier, fig_number)
+        self._add_figure_identifier(identifier, fig_number, pf.stringify(caption.content))
 
         # キャプションに図番号を追加する
         caption_text = self.figure_title_template % fig_number
@@ -144,7 +150,8 @@ class FigureCrossRef():
 
     def _add_figure_identifier(self,
                                identifier: str,
-                               fig_number: str) -> None:
+                               fig_number: str,
+                               fig_title: str) -> None:
         """図参照の追加
 
         Args:
@@ -152,6 +159,8 @@ class FigureCrossRef():
                 図のID
             fig_number (str):
                 図番号
+            fig_title (str):
+                図のタイトル
         """
         # 重複登録はエラーで落とす
         if identifier in self.references:
@@ -160,6 +169,9 @@ class FigureCrossRef():
 
         # 登録
         self.references[identifier] = fig_number
+
+        # タイトルも登録
+        self.references_title[identifier] = fig_title
 
     def _get_figure_number(self,
                            list_present_section_numbers: List[int]) -> str:
@@ -204,10 +216,12 @@ class FigureCrossRef():
             pf.Str | pf.Link:
                 参照追加後の要素
         """
+        key, is_add_title = utils.split_key_title(key)
         target = pf.Str("")
         self.list_replace_target.append({
             "key": key,
             "target": target,
+            "add_title": is_add_title
         })
 
         if self.enable_link:
@@ -220,14 +234,16 @@ class FigureCrossRef():
         """参照の上書き"""
         for replace_target in self.list_replace_target:
             replace_target["target"].text = self.get_reference_string(
-                replace_target["key"])
+                replace_target["key"], replace_target["add_title"])
 
-    def get_reference_string(self, key: str) -> str:
+    def get_reference_string(self, key: str, add_title: bool) -> str:
         """参照キーから、図番号の文字列を返す
 
         Args:
             key (str):
                 参照キー
+            add_title (bool):
+                タイトルを追加するかどうか
 
         Returns:
             str:
@@ -238,4 +254,8 @@ class FigureCrossRef():
             logger.error(f"No such reference: '{key}'.")
             sys.exit(1)
         fig_number = self.figure_title_template % self.references[key]
+
+        if add_title:
+            fig_title = self.references_title[key]
+            fig_number = fig_number + " " + fig_title
         return fig_number

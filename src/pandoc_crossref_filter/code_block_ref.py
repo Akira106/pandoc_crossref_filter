@@ -155,7 +155,8 @@ class CodeBlockRef():
         for replace_text in self.list_replace_target:
             # 参照キーから、置き換える文字列を取得する
             list_replace_value = []
-            for key in replace_text["list_ref_key"]:
+            for key_tmp in replace_text["list_ref_key"]:
+                key, add_title = utils.split_key_title(key_tmp)
                 if key.startswith("sec:"):
                     reference = section_cross_ref
                 elif key.startswith("fig:"):
@@ -167,7 +168,7 @@ class CodeBlockRef():
                     sys.exit(1)
 
                 # 参照の取得
-                list_replace_value.append(reference.get_reference_string(key))
+                list_replace_value.append(reference.get_reference_string(key, add_title))
 
             # コードブロック文字列の置き換え
             replace_text["elem"].text = \

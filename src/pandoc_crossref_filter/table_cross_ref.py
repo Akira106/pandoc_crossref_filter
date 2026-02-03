@@ -37,8 +37,10 @@ class TableCrossRef():
             config.get("delimiter", "-")
         self.enable_link: bool = enable_link
 
-        # 参照用のセクション番号を格納する辞書
+        # 参照用の表番号を格納する辞書
         self.references: Dict = {}
+        # 参照用の表のタイトルを格納する辞書
+        self.references_title: Dict = {}
         # 書き換えるべき項目を記憶する(最後に書き換える)
         self.list_replace_target: List[Dict] = []
         # 表番号の連番をカウントする辞書
@@ -78,7 +80,7 @@ class TableCrossRef():
         table_number = self._get_table_number(list_present_section_numbers)
 
         # identifierの登録
-        self._add_table_ref(identifier, table_number)
+        self._add_table_ref(identifier, table_number, new_caption_text)
 
         # キャプションに表番号を追加する
         new_caption_text = \
@@ -136,7 +138,8 @@ class TableCrossRef():
 
     def _add_table_ref(self,
                        identifier: str,
-                       table_number: str) -> None:
+                       table_number: str,
+                       table_title: str) -> None:
         """表参照の追加
 
         Args:
@@ -144,6 +147,8 @@ class TableCrossRef():
                 表ID
             ftable_number (str):
                 表番号
+            table_title (str):
+                表のタイトル
         """
         # 重複登録はエラーで落とす
         if identifier in self.references:
@@ -152,6 +157,9 @@ class TableCrossRef():
 
         # 登録
         self.references[identifier] = table_number
+
+        # タイトルも登録
+        self.references_title[identifier] = table_title
 
     def _get_table_number(self,
                           list_present_section_numbers: List[int]) -> str:
@@ -207,10 +215,12 @@ class TableCrossRef():
             pf.Str | pf.Link:
                 参照追加後の要素
         """
+        key, is_add_title = utils.split_key_title(key)
         target = pf.Str("")
         self.list_replace_target.append({
             "key": key,
             "target": target,
+            "add_title": is_add_title
         })
 
         if self.enable_link:
@@ -223,14 +233,16 @@ class TableCrossRef():
         """参照の上書き"""
         for replace_target in self.list_replace_target:
             replace_target["target"].text = self.get_reference_string(
-                replace_target["key"])
+                replace_target["key"], replace_target["add_title"])
 
-    def get_reference_string(self, key: str) -> str:
+    def get_reference_string(self, key: str, add_title: bool) -> str:
         """参照キーから、表番号の文字列を返す
 
         Args:
             key (str):
                 参照キー
+            add_title (bool):
+                タイトルを追加するかどうか
 
         Returns:
             str:
@@ -241,4 +253,10 @@ class TableCrossRef():
             logger.error(f"No such reference: '{key}'.")
             sys.exit(1)
         table_number = self.table_title_template % self.references[key]
+
+        if add_title is True:
+            table_title = self.references_title[key]
+            if table_title != "":
+                table_number += " " + table_title
+
         return table_number
