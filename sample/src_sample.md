@@ -40,9 +40,13 @@ pandoc_crossref_filter:
 - [@sec:sec3]
 - [@sec:sec4]
 
+末尾に`+title`を追加することで、タイトルの参照も可能です。
+
+- [@sec:fig_ref+title]
+
 ## [@sec:sec2]-A) ヘッダーの中でもセクション番号を参照できます {.unnumbered}
 
-## 図番号の参照
+## 図番号の参照{#sec:fig_ref}
 
 [@fig:fig1]を参照します。
 

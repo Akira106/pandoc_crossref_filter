@@ -222,6 +222,16 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
 
 引用は、本文、箇条書き、表、ヘッダー(3.4.2項) 、コードブロックの中(PlantUML/Mermaidの図の中、3.4.3項)で使用することができます。
 
+  
+
+また、末尾に`+title`を追加することで、タイトルも一緒に引用することができます。
+
+`例`
+
+- `[@sec:XXX+title]`
+- `[@fig:XXX+title]`
+- `[@tbl:XXX+title]`
+
 ### 3.3. 設定値
 
 Markdownファイルの先頭に`---`で囲ったブロックを記述します。その中で、以下のように`pandoc_crossref_filter`から始まるYAML形式で、設定を記載することができます。
