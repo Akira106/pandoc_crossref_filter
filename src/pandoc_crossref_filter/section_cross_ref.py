@@ -45,6 +45,8 @@ class SectionCrossRef():
         self.list_present_section_numbers: List[int] = []
         # 参照用のセクション番号を格納する辞書
         self.references: Dict = {}
+        # 参照用のセクションのタイトルを格納する辞書
+        self.references_title: Dict = {}
         # 書き換えるべき項目を記憶する(最後に書き換える)
         self.list_replace_target: List[Dict] = []
 
@@ -67,11 +69,16 @@ class SectionCrossRef():
         self._increment_section_numbers(elem.level)
         # セクション番号を文字列に変換
         section_number_str = self._get_section_number_str()
+
+        # セクションタイトルの取得
+        section_title = pf.stringify(elem.content)
+
         # 元のヘッダー内容の前にセクション番号を追加
         if self.auto_section:
             self._insert_section_numbers(elem.content, section_number_str)
+
         # セクション参照の追加
-        self._add_section_identifier(elem.identifier, section_number_str)
+        self._add_section_identifier(elem.identifier, section_number_str, section_title)
 
     def _is_unnumbered(self, classes: List[str]) -> bool:
         """セクション番号を加算しないヘッダーであるか判定する
@@ -128,7 +135,8 @@ class SectionCrossRef():
 
     def _add_section_identifier(self,
                                 identifier: str,
-                                section_number_str: str) -> None:
+                                section_number_str: str,
+                                section_title) -> None:
         """セクション参照の追加
 
         Args:
@@ -136,6 +144,8 @@ class SectionCrossRef():
                 ヘッダーのID
             section_number_str (str):
                 ヘッダーのセクション番号
+            section_title (str):
+                ヘッダーのタイトル
         """
         # ヘッダーに"#sec:"が無ければ終了
         if identifier.startswith("sec:") is False:
@@ -148,6 +158,9 @@ class SectionCrossRef():
 
         # 登録
         self.references[identifier] = section_number_str
+
+        # タイトルも登録
+        self.references_title[identifier] = section_title
 
     def add_reference(self,
                       key: str,
@@ -162,11 +175,13 @@ class SectionCrossRef():
             pf.Str | pf.Link:
                 参照追加後の要素
         """
+        key, is_add_title = utils.split_key_title(key)
         target = pf.Str("")
         self.list_replace_target.append({
             "key": key,
             "target": target,
-            "is_header": is_header
+            "is_header": is_header,
+            "add_title": is_add_title
         })
 
         # ヘッダー内の参照なら終了
@@ -183,14 +198,16 @@ class SectionCrossRef():
         """参照の上書き"""
         for replace_target in self.list_replace_target:
             replace_target["target"].text = self.get_reference_string(
-                replace_target["key"], replace_target["is_header"])
+                replace_target["key"], replace_target["add_title"], replace_target["is_header"])
 
-    def get_reference_string(self, key: str, is_header: bool = False) -> str:
+    def get_reference_string(self, key: str, add_title: bool, is_header: bool=False) -> str:
         """参照キーから、セクション番号の文字列を返す
 
         Args:
             key (str):
                 参照キー
+            add_title (bool):
+                タイトルを追加するかどうか
             is_header (bool):
                 ヘッダーかどうか
 
@@ -208,8 +225,16 @@ class SectionCrossRef():
         if is_header is True:
             return section_number_str
 
-        return self._get_section_str(
+        reference_string = self._get_section_str(
             section_number_str, self.section_ref_template)
+
+        # タイトルの追加
+        if add_title is True:
+            section_title = self.references_title[key]
+            if section_title != "":
+                reference_string += " " + section_title
+
+        return reference_string
 
     def _get_section_str(self,
                          section_number_str: str,
