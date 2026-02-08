@@ -82,11 +82,9 @@ class FigureCrossRef():
         fig_number = self._get_figure_number(list_present_section_numbers)
 
         # 図タイトルの取得
-        figure_title = ""
-        if isinstance(elem, pf.Figure):
-            figure_title = self._get_caption(elem)
-        else:
-            figure_title = pf.stringify(elem.content)
+        # .contentが無いと、なぜかキャプションが二重になる
+        # figure_title = pf.stringify(elem)
+        figure_title = pf.stringify(elem.content)
 
         # identifierの登録
         self._add_figure_identifier(elem.identifier, fig_number, figure_title)
@@ -104,23 +102,6 @@ class FigureCrossRef():
             caption = pf.Str(caption_text)
             image = elem
             return [image, pf.Str("\n\n: "), caption]
-
-    def _get_caption(self, elem: pf.Figure) -> str:
-        """キャプションの取得
-
-        指定されたFigure要素からキャプションテキストを取得する。
-        Args:
-            elem (pf.Figure): キャプションを含むFigure要素。
-        Returns:
-            str: キャプションのテキスト。
-        """
-        list_text = []
-        for c in elem.caption.content[0].content:
-            if isinstance(c, pf.Space):
-                list_text.append(" ")
-            else:
-                list_text.append(c.text)
-        return "".join(list_text)
 
     def register_external_caption(self,
                                   caption: pf.Para,

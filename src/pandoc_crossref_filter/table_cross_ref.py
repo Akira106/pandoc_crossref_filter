@@ -64,8 +64,8 @@ class TableCrossRef():
             return
 
         # キャプションのテキスト情報と表定義の取得
-        caption_text = self._get_caption_text(elem)
-        if caption_text is None:  # キャプションが無ければ何もしない
+        caption_text = pf.stringify(elem.content)
+        if not caption_text:  # キャプションが無ければ何もしない
             return
         identifier, new_caption_text = self._get_table_identifier(caption_text)
         # 参照が定義されていなければ何もしない
@@ -86,29 +86,6 @@ class TableCrossRef():
         new_caption_text = \
             self.table_title_template % table_number + " " + new_caption_text
         self._set_caption_text(elem, new_caption_text)
-
-    def _get_caption_text(self, elem: pf.Caption) -> str | None:
-        """キャプションのテキスト情報を取得する
-
-        Args:
-            elem (pf.Caption):
-                キャプション要素
-
-        Returns:
-            str: テキスト情報
-        """
-        # キャプションが無ければ終了
-        if len(elem.content) == 0:
-            return None
-
-        caption_text = ""
-        for caption_elem in elem.content[0].content:
-            if isinstance(caption_elem, pf.Space):
-                caption_text += " "
-            else:
-                caption_text += caption_elem.text
-
-        return caption_text
 
     def _get_table_identifier(self,
                               caption_text: str) -> Tuple[None | str, str]:
