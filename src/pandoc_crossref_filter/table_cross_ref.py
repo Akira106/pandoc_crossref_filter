@@ -78,6 +78,13 @@ class TableCrossRef():
 
         # width指定があればクラスに追加
         if width:
+            # テーブルのカラム数をチェック
+            num_columns = len(root_elem.colspec) if hasattr(root_elem, 'colspec') else 0
+            width_valid = self._validate_width(width, num_columns)
+            if not width_valid:
+                logger.error(f"Width specification '{width}' is invalid.")
+                sys.exit(1)
+
             if not hasattr(root_elem, 'classes'):
                 root_elem.classes = []
             elif isinstance(root_elem.classes, str):
@@ -129,38 +136,54 @@ class TableCrossRef():
             if not identifier and not width:
                 return None, "", caption_text
 
-            # width の検証
-            if width:
-                width_valid = self._validate_width(width)
-                if not width_valid:
-                    logger.error(f"Width specification '{width}' is invalid. Total must be 100.")
-                    sys.exit(1)
-
             # 表定義の削除
             new_caption_text = re.sub(pattern, "", caption_text).strip()
             return identifier if identifier else None, width, new_caption_text
         else:
             return None, "", caption_text
 
-    def _validate_width(self, width: str) -> bool:
+    def _validate_width(self, width: str, num_columns: int) -> bool:
         """幅の値が有効か検証する
 
         Args:
             width (str):
                 幅の指定 (例: "20,80" または "20" など)
+            num_columns (int):
+                テーブルのカラム数
 
         Returns:
             bool:
-                有効な場合 True、合計が100でない場合 False
+                有効な場合 True、以下の場合 False:
+                - 数値に変換できない
+                - 合計が100でない
+                - カラム数と幅指定の個数が異なる
         """
         try:
             # カンマで分割して数値に変換
             width_values = [float(v.strip()) for v in width.split(',')]
+
+            # カラム数と幅指定の個数が一致するかをチェック
+            if len(width_values) != num_columns:
+                logger.error(
+                    f"Number of width specifications ({len(width_values)}) "
+                    f"does not match the number of columns ({num_columns})."
+                )
+                return False
+
             # 合計が100かどうかを確認
             total = sum(width_values)
-            return total == 100
+            if total != 100:
+                logger.error(
+                    f"Sum of widths ({total}) must be 100."
+                )
+                return False
+
+            return True
         except (ValueError, AttributeError):
             # 数値に変換できない場合は False
+            logger.error(
+                f"Width specification '{width}' contains invalid values."
+            )
             return False
 
     def _add_table_ref(self,
