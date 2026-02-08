@@ -128,11 +128,40 @@ class TableCrossRef():
             # 少なくともidentifierまたはwidthのどちらかがあるかを確認
             if not identifier and not width:
                 return None, "", caption_text
+
+            # width の検証
+            if width:
+                width_valid = self._validate_width(width)
+                if not width_valid:
+                    logger.error(f"Width specification '{width}' is invalid. Total must be 100.")
+                    sys.exit(1)
+
             # 表定義の削除
             new_caption_text = re.sub(pattern, "", caption_text).strip()
             return identifier if identifier else None, width, new_caption_text
         else:
             return None, "", caption_text
+
+    def _validate_width(self, width: str) -> bool:
+        """幅の値が有効か検証する
+
+        Args:
+            width (str):
+                幅の指定 (例: "20,80" または "20" など)
+
+        Returns:
+            bool:
+                有効な場合 True、合計が100でない場合 False
+        """
+        try:
+            # カンマで分割して数値に変換
+            width_values = [float(v.strip()) for v in width.split(',')]
+            # 合計が100かどうかを確認
+            total = sum(width_values)
+            return total == 100
+        except (ValueError, AttributeError):
+            # 数値に変換できない場合は False
+            return False
 
     def _add_table_ref(self,
                        identifier: str,
