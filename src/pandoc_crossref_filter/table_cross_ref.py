@@ -155,7 +155,7 @@ class TableCrossRef():
             bool:
                 有効な場合 True、以下の場合 False:
                 - 数値に変換できない
-                - 合計が100でない
+                - 合計が100を超える
                 - カラム数と幅指定の個数が異なる
         """
         try:
@@ -170,11 +170,11 @@ class TableCrossRef():
                 )
                 return False
 
-            # 合計が100かどうかを確認
+            # 合計が100を超えないかをチェック
             total = sum(width_values)
-            if total != 100:
+            if total > 100:
                 logger.error(
-                    f"Sum of widths ({total}) must be 100."
+                    f"Sum of widths ({total}) must be less than or equal to 100."
                 )
                 return False
 
