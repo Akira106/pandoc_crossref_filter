@@ -156,6 +156,53 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
   
 
+##### カラムの幅の設定
+
+追加の機能で、カラムの幅を設定できます。  
+設定した値は、MarkdownをWordファイルに変換したときに反映されます。
+
+以下のように、`.width="X,Y,Z"`の形式で、カラムの幅をパーセンテージで指定してください。  
+ただし、合計は100以下になるように設定してください。
+
+    : キャプション{#tbl:XXX .width="30,70"}
+
+次に、Wordに変換するときに、[lua-filter/tablewidth.lua](lua-filter/tablewidth.lua)をPandocのフィルターとして指定してください。
+
+`例`
+
+``` shell-session
+$ pandoc input.md -o output.docx --lua-filter=tablewidth.lua
+```
+
+Luaフィルターは、以下の方法でパスを通すことができます。
+
+1.  パスを直接指定する。
+2.  以下のコマンド
+
+``` shell-session
+$ pandoc --version
+```
+
+を実行し、User data directoryに表示されるディレクトリを確認してください。  
+そのディレクトリの中に、更にfiltersというディレクトリを作成し、その中にフィルター(\*.lua)を配置してください。
+
+`例`
+
+``` shell-session
+$ pandoc --version
+  
+pandoc 3.6.2
+...(省略)...
+User data directory: /home/username/.local/share/pandoc
+...(省略)...
+```
+
+⇒
+
+`/home/username/.local/share/pandoc/filters/*.lua`のように、フィルターを配置します。
+
+  
+
 ##### 参考
 
 Markdown Previce Enhancedを使用する場合、import機能で外部CSVファイルを表として使用するこができます。
@@ -164,6 +211,8 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
 
     @import "test.csv"
     : importされた表{#tbl:import_tbl}
+
+  
 
 #### 3.1.4. PlantUMLへの図番号の挿入
 

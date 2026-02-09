@@ -67,14 +67,35 @@ class TableCrossRef():
         caption_text = pf.stringify(elem.content)
         if not caption_text:  # キャプションが無ければ何もしない
             return
-        identifier, new_caption_text = self._get_table_identifier(caption_text)
-        # 参照が定義されていなければ何もしない
-        if identifier is None:
+        identifier, width, new_caption_text = self._get_table_identifier(caption_text)
+        # 参照と width が定義されていなければ何もしない
+        if identifier is None and not width:
             return
 
-        if self.enable_link:
+        if self.enable_link and identifier:
             # 親のTable要素に参照元(identifier)を設定する
             root_elem.identifier = identifier
+
+        # width指定があればクラスに追加
+        if width:
+            # テーブルのカラム数をチェック
+            num_columns = len(root_elem.colspec) if hasattr(root_elem, 'colspec') else 0
+            width_valid = self._validate_width(width, num_columns)
+            if not width_valid:
+                logger.error(f"Width specification '{width}' is invalid.")
+                sys.exit(1)
+
+            if not hasattr(root_elem, 'classes'):
+                root_elem.classes = []
+            elif isinstance(root_elem.classes, str):
+                root_elem.classes = [root_elem.classes]
+            root_elem.classes.append(f'width="{width}"')
+            # キャプション文字列を更新（width部分を削除）
+            self._set_caption_text(elem, new_caption_text)
+
+        # identifier がない場合は表番号処理をスキップ
+        if identifier is None:
+            return
 
         # 表番号の取得
         table_number = self._get_table_number(list_present_section_numbers)
@@ -88,7 +109,7 @@ class TableCrossRef():
         self._set_caption_text(elem, new_caption_text)
 
     def _get_table_identifier(self,
-                              caption_text: str) -> Tuple[None | str, str]:
+                              caption_text: str) -> Tuple[None | str, str, str]:
         """表定義を取得する関数
 
         Args:
@@ -99,19 +120,71 @@ class TableCrossRef():
             None or str:
                 表定義
             str:
+                width情報（指定されていなければ空文字列）
+            str:
                 表定義を削除したあとのテキスト情報
         """
         # 正規表現でパターンを抽出
-        pattern = r"\{#(tbl:[^\}]+)\}"
+        # {#tbl:XXX}, {#tbl:XXX .width="20,80"}, {.width="20,80"} に対応
+        pattern = r"\{(?:#(tbl:[^\s\}]+))?(?:\s*\.width=\"([^\"]+)\")?\}"
         matches = re.findall(pattern, caption_text)
 
         if matches:
+            # 複数見つかった場合は最後の1だけにする
+            identifier, width = matches[-1]
+            # 少なくともidentifierまたはwidthのどちらかがあるかを確認
+            if not identifier and not width:
+                return None, "", caption_text
+
             # 表定義の削除
             new_caption_text = re.sub(pattern, "", caption_text).strip()
-            # 複数見つかった場合は最後の1だけにする
-            return matches[-1], new_caption_text
+            return identifier if identifier else None, width, new_caption_text
         else:
-            return None, caption_text
+            return None, "", caption_text
+
+    def _validate_width(self, width: str, num_columns: int) -> bool:
+        """幅の値が有効か検証する
+
+        Args:
+            width (str):
+                幅の指定 (例: "20,80" または "20" など)
+            num_columns (int):
+                テーブルのカラム数
+
+        Returns:
+            bool:
+                有効な場合 True、以下の場合 False:
+                - 数値に変換できない
+                - 合計が100を超える
+                - カラム数と幅指定の個数が異なる
+        """
+        try:
+            # カンマで分割して数値に変換
+            width_values = [float(v.strip()) for v in width.split(',')]
+
+            # カラム数と幅指定の個数が一致するかをチェック
+            if len(width_values) != num_columns:
+                logger.error(
+                    f"Number of width specifications ({len(width_values)}) "
+                    f"does not match the number of columns ({num_columns})."
+                )
+                return False
+
+            # 合計が100を超えないかをチェック
+            total = sum(width_values)
+            if total > 100:
+                logger.error(
+                    f"Sum of widths ({total}) must be less than or equal to 100."
+                )
+                return False
+
+            return True
+        except (ValueError, AttributeError):
+            # 数値に変換できない場合は False
+            logger.error(
+                f"Width specification '{width}' contains invalid values."
+            )
+            return False
 
     def _add_table_ref(self,
                        identifier: str,
