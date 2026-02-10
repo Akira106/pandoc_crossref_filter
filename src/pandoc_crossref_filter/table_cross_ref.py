@@ -67,30 +67,28 @@ class TableCrossRef():
         caption_text = pf.stringify(elem.content)
         if not caption_text:  # キャプションが無ければ何もしない
             return
-        identifier, width, new_caption_text = self._get_table_identifier(caption_text)
-        # 参照と width が定義されていなければ何もしない
-        if identifier is None and not width:
+        identifier, colwidth, new_caption_text = self._get_table_identifier(caption_text)
+        # 参照と colwidth が定義されていなければ何もしない
+        if identifier is None and not colwidth:
             return
 
         if self.enable_link and identifier:
             # 親のTable要素に参照元(identifier)を設定する
             root_elem.identifier = identifier
 
-        # width指定があればクラスに追加
-        if width:
+        # colwidth指定があればクラスに追加
+        if colwidth:
             # テーブルのカラム数をチェック
             num_columns = len(root_elem.colspec) if hasattr(root_elem, 'colspec') else 0
-            width_valid = self._validate_width(width, num_columns)
-            if not width_valid:
-                logger.error(f"Width specification '{width}' is invalid.")
+            colwidth_valid = self._validate_colwidth(colwidth, num_columns)
+            if not colwidth_valid:
+                logger.error(f"Colwidth specification '{colwidth}' is invalid.")
                 sys.exit(1)
 
-            if not hasattr(root_elem, 'classes'):
-                root_elem.classes = []
-            elif isinstance(root_elem.classes, str):
-                root_elem.classes = [root_elem.classes]
-            root_elem.classes.append(f'width="{width}"')
-            # キャプション文字列を更新（width部分を削除）
+            if not hasattr(root_elem, 'attributes'):
+                root_elem.attributes = []
+            root_elem.attributes["colwidth"] = colwidth
+            # キャプション文字列を更新（colwidth部分を削除）
             self._set_caption_text(elem, new_caption_text)
 
         # identifier がない場合は表番号処理をスキップ
@@ -120,33 +118,33 @@ class TableCrossRef():
             None or str:
                 表定義
             str:
-                width情報（指定されていなければ空文字列）
+                colwidth情報（指定されていなければ空文字列）
             str:
                 表定義を削除したあとのテキスト情報
         """
         # 正規表現でパターンを抽出
-        # {#tbl:XXX}, {#tbl:XXX .width="20,80"}, {.width="20,80"} に対応
-        pattern = r"\{(?:#(tbl:[^\s\}]+))?(?:\s*\.width=\"([^\"]+)\")?\}"
+        # {#tbl:XXX}, {#tbl:XXX colwidth="20,80"}, {colwidth="20,80"} に対応
+        pattern = r"\{(?:#(tbl:[^\s\}]+))?(?:\s*colwidth=\"([^\"]+)\")?\}"
         matches = re.findall(pattern, caption_text)
 
         if matches:
             # 複数見つかった場合は最後の1だけにする
-            identifier, width = matches[-1]
-            # 少なくともidentifierまたはwidthのどちらかがあるかを確認
-            if not identifier and not width:
+            identifier, colwidth = matches[-1]
+            # 少なくともidentifierまたはcolwidthのどちらかがあるかを確認
+            if not identifier and not colwidth:
                 return None, "", caption_text
 
             # 表定義の削除
             new_caption_text = re.sub(pattern, "", caption_text).strip()
-            return identifier if identifier else None, width, new_caption_text
+            return identifier if identifier else None, colwidth, new_caption_text
         else:
             return None, "", caption_text
 
-    def _validate_width(self, width: str, num_columns: int) -> bool:
+    def _validate_colwidth(self, colwidth: str, num_columns: int) -> bool:
         """幅の値が有効か検証する
 
         Args:
-            width (str):
+            colwidth (str):
                 幅の指定 (例: "20,80" または "20" など)
             num_columns (int):
                 テーブルのカラム数
@@ -160,21 +158,21 @@ class TableCrossRef():
         """
         try:
             # カンマで分割して数値に変換
-            width_values = [float(v.strip()) for v in width.split(',')]
+            colwidth_values = [float(v.strip()) for v in colwidth.split(',')]
 
             # カラム数と幅指定の個数が一致するかをチェック
-            if len(width_values) != num_columns:
+            if len(colwidth_values) != num_columns:
                 logger.error(
-                    f"Number of width specifications ({len(width_values)}) "
+                    f"Number of colwidth specifications ({len(colwidth_values)}) "
                     f"does not match the number of columns ({num_columns})."
                 )
                 return False
 
             # 合計が100を超えないかをチェック
-            total = sum(width_values)
+            total = sum(colwidth_values)
             if total > 100:
                 logger.error(
-                    f"Sum of widths ({total}) must be less than or equal to 100."
+                    f"Sum of colwidths ({total}) must be less than or equal to 100."
                 )
                 return False
 
@@ -182,7 +180,7 @@ class TableCrossRef():
         except (ValueError, AttributeError):
             # 数値に変換できない場合は False
             logger.error(
-                f"Width specification '{width}' contains invalid values."
+                f"Colwidth specification '{colwidth}' contains invalid values."
             )
             return False
 
