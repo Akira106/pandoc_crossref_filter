@@ -98,7 +98,7 @@ class CodeBlockRef():
                 wrapper.add(filename, elem)
 
                 caption = pf.Str(caption)
-                image = pf.Image(caption, url=filename)
+                image = pf.Image(caption, url=filename, attributes=elem.attributes)
                 if identifier is None:
                     return image
 
