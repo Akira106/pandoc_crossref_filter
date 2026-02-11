@@ -86,7 +86,7 @@ class TableCrossRef():
                 sys.exit(1)
 
             if not hasattr(root_elem, 'attributes'):
-                root_elem.attributes = []
+                root_elem.attributes = {}
             root_elem.attributes["colwidth"] = colwidth
             # キャプション文字列を更新（colwidth部分を削除）
             self._set_caption_text(elem, new_caption_text)
