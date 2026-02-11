@@ -156,7 +156,7 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
   
 
-##### カラムの幅の設定
+##### 3.1.3.1. カラムの幅の設定
 
 追加の機能で、カラムの幅を設定できます。  
 設定した値は、MarkdownをWordファイルに変換したときに反映されます。
@@ -454,13 +454,20 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
 `例`
 
-以下の設定例では、対象のMarkdownを`test_export.md`というファイル名でエクスポートします。
+以下の設定例では、対象のMarkdownを`test_export.md`というファイル名でエクスポートします。  
+※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。  
+※`colwidth.lua`は3.1.3.1目参照、必須ではありません。
 
     ---
     output:
       custom_document:
         path: test_export.md
-        pandoc_args: ['--to=gfm', '--filter=pandoc_crossref_filter', '--wrap=preserve']
+        pandoc_args: [
+          '--to=gfm',
+          '--filter=pandoc_crossref_filter',
+          '--lua-filter=colwidth.lua',
+          '--wrap=preserve'
+        ]
     ---
 
 上記を設定したら、VSCodeで以下のような操作を行うことで、エクスポートが可能です。
@@ -473,7 +480,8 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 #### 3.5.2. Wordファイルへの変換
 
 3.5.1項と同様に、`pandoc_args`の設定に本フィルターを追加することで、エクスポートが可能になります。  
-※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。
+※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。  
+※`colwidth.lua`は3.1.3.1目参照、必須ではありません。
 
 `例`
 
@@ -482,7 +490,11 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
       word_document:
         path: output_docx/test_export.docx
         toc: true
-        pandoc_args: ['--filter=pandoc_crossref_filter', '--wrap=preserve']
+        pandoc_args: [
+          '--filter=pandoc_crossref_filter',
+          '--lua-filter=colwidth.lua',
+          '--wrap=preserve'
+        ]
     ---
 
 ### 3.6. サンプル
