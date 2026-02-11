@@ -178,7 +178,7 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
 <br>
 
-##### カラムの幅の設定{.un}
+##### カラムの幅の設定{#sec:sec_table_colwidth}
 
 追加の機能で、カラムの幅を設定できます。
 設定した値は、MarkdownをWordファイルに変換したときに反映されます。
@@ -414,13 +414,20 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 `例`
 
 以下の設定例では、対象のMarkdownを`test_export.md`というファイル名でエクスポートします。
+※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。
+※`colwidth.lua`は[@sec:sec_table_colwidth]参照、必須ではありません。
 
 ```
 ---
 output:
   custom_document:
     path: test_export.md
-    pandoc_args: ['--to=gfm', '--filter=pandoc_crossref_filter', '--wrap=preserve']
+    pandoc_args: [
+      '--to=gfm',
+      '--filter=pandoc_crossref_filter',
+      '--lua-filter=colwidth.lua',
+      '--wrap=preserve'
+    ]
 ---
 ```
 
@@ -435,6 +442,7 @@ output:
 
 [@sec:sec_gfm_export]と同様に、`pandoc_args`の設定に本フィルターを追加することで、エクスポートが可能になります。
 ※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。
+※`colwidth.lua`は[@sec:sec_table_colwidth]参照、必須ではありません。
 
 `例`
 
@@ -444,7 +452,11 @@ output:
   word_document:
     path: output_docx/test_export.docx
     toc: true
-    pandoc_args: ['--filter=pandoc_crossref_filter', '--wrap=preserve']
+    pandoc_args: [
+      '--filter=pandoc_crossref_filter',
+      '--lua-filter=colwidth.lua',
+      '--wrap=preserve'
+    ]
 ---
 ```
 
