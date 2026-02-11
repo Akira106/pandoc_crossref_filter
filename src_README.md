@@ -183,19 +183,19 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 追加の機能で、カラムの幅を設定できます。
 設定した値は、MarkdownをWordファイルに変換したときに反映されます。
 
-以下のように、`.width="X,Y,Z"`の形式で、カラムの幅をパーセンテージで指定してください。
+以下のように、`colwidth="X,Y,Z"`の形式で、カラムの幅をパーセンテージで指定してください。
 ただし、合計は100以下になるように設定してください。
 
 ```
-: キャプション{#tbl:XXX .width="30,70"}
+: キャプション{#tbl:XXX colwidth="30,70"}
 ```
 
-次に、Wordに変換するときに、[lua-filter/tablewidth.lua](lua-filter/tablewidth.lua)をPandocのフィルターとして指定してください。
+次に、Wordに変換するときに、[lua-filter/colwidth.lua](lua-filter/colwidth.lua)をPandocのフィルターとして指定してください。
 
 `例`
 
 ```shell-session
-$ pandoc input.md -o output.docx --lua-filter=tablewidth.lua
+$ pandoc input.md -o output.docx --lua-filter=colwidth.lua
 ```
 
 
@@ -229,7 +229,7 @@ User data directory: /home/username/.local/share/pandoc
 <br>
 
 ##### 参考{.un}
-Markdown Previce Enhancedを使用する場合、import機能で外部CSVファイルを表として使用するこができます。
+Markdown Preview Enhancedを使用する場合、import機能で外部CSVファイルを表として使用するこができます。
 
 `例`
 
@@ -243,10 +243,11 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
 #### PlantUMLへの図番号の挿入 {#sec:sec_puml_insert}
 
 1. \`\`\`{.plantuml}\`\`\`というコードブロックを使用します。**※1**
-2. PlantUMLのコードブロックの中に以下のコメントを記載することで、図番号の挿入、キャプション、出力画像ファイル名の設定を行います。
-  - 図番号の挿入：`'#fig:XXX`
+2. PlantUMLのコードブロックの中に以下のコメントを記載することで、図番号の挿入、キャプション、出力画像ファイル名、画像幅の設定を行います。
+  - 図番号の挿入(オプション)：`'#fig:XXX`
   - キャプション：`'caption=YYY`
   - 出力画像のファイル名：`'filename=ZZZ`
+  - 画像幅(オプション)：`'width=WWW`
 
 
 **※1**
@@ -258,6 +259,7 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
     'filename="test.svg"
     '#fig:fig_puml
     'caption=PlantUMLの画像です
+    'width=30%
 
     Bob -> Alice : hello
     ```
@@ -265,10 +267,11 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
 #### Mermaidへの図番号の挿入 {#sec:sec_mermaid_insert}
 
 1. \`\`\`{.mermaid}\`\`\`というコードブロックを使用します。**※1**
-2. Mermaidのコードブロックの中に以下のコメントを記載することで、図番号の挿入、キャプション、出力画像ファイル名の設定を行います。
-  - 図番号の挿入：`%%#fig:XXX`
+2. Mermaidのコードブロックの中に以下のコメントを記載することで、図番号の挿入、キャプション、出力画像ファイル名、画像幅の設定を行います。
+  - 図番号の挿入(オプション)：`%%#fig:XXX`
   - キャプション：`%%caption=YYY`
   - 出力画像のファイル名：`%%filename=ZZZ`
+  - 画像幅(オプション)：`%%width=WWW`
 
 
 **※1**
@@ -280,6 +283,8 @@ Markdown Previce Enhancedを使用する場合、import機能で外部CSVファ�
     %%filename="test.svg"
     %%#fig:fig_puml
     %%caption=Mermaidの画像です
+    %%width=30%
+
     sequenceDiagram
       Bob ->> Alice : hello
     ```
