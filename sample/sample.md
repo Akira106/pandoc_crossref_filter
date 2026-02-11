@@ -34,7 +34,7 @@
 
 \[表3-1\]を参照します。
 
-<table>
+<table data-colwidth="80,20">
 <caption>[表3-1] 表番号の参照のサンプルです</caption>
 <colgroup>
 <col style="width: 50%" />
@@ -73,12 +73,12 @@
 
   
 
-![処理Xの詳細](assets/test2.png)  
+<img src="assets/test2.png" style="width:30.0%" alt="処理Xの詳細" />  
 \[図4-2\] 処理Xの詳細
 
   
 
 \[図4-3\]は、Mermaidで作成しています。
 
-![Mermaidのテスト](assets/test_mermaid.png)  
+<img src="assets/test_mermaid.png" style="width:30.0%" alt="Mermaidのテスト" />  
 \[図4-3\] Mermaidのテスト

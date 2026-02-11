@@ -70,8 +70,8 @@ class CodeBlockRef():
             if wrapper.is_image(elem) is False:
                 continue
 
-            # ファイル名、キャプション、IDを取得する
-            filename, caption, identifier = \
+            # ファイル名、キャプション、ID、幅を取得する
+            filename, caption, identifier, width = \
                 wrapper.extract_filename_caption_identifier(elem.text)
 
             # Markdown Preview Enhancedでプレビューしている場合は、キャプションとIDを追加する
@@ -97,14 +97,17 @@ class CodeBlockRef():
 
                 wrapper.add(filename, elem)
 
-                caption = pf.Str(caption)
-                image = pf.Image(caption, url=filename, attributes=elem.attributes)
+                # widthが指定されていれば属性に追加
+                attributes = elem.attributes.copy()
+                if width is not None:
+                    attributes["width"] = width
+                image = pf.Image(pf.Str(caption), url=filename, attributes=attributes)
                 if identifier is None:
                     return image
 
                 figure = pf.Figure(
                     pf.Plain(image),
-                    caption=pf.Caption(pf.Plain(caption)),
+                    caption=pf.Caption(pf.Plain(pf.Str(caption))),
                     identifier=identifier)
                 return figure
 

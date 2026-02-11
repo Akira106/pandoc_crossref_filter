@@ -23,6 +23,7 @@ class PlantUMLWrapper():
     @staticmethod
     def extract_filename_caption_identifier(text: str) -> Tuple[str | None,
                                                                 str,
+                                                                str | None,
                                                                 str | None]:
         """PlantUMLのCodeBlockの中からファイル名、キャプション、IDを取得する
 
@@ -30,7 +31,8 @@ class PlantUMLWrapper():
         - 'filename=XX
         - 'caption=YY
         - '#fig:ZZ'
-        が記載されているとき、XX, YY, fig:ZZを返します。
+        - 'width=AA
+        が記載されているとき、XX, YY, fig:ZZ, AAを返します。
 
         Args:
             text (str):
@@ -40,14 +42,17 @@ class PlantUMLWrapper():
             str | None: PlantUMLで出力後のファイル名 = XX
             str: キャプション = YY
             str | None: ID = fig:ZZ
+            str | None: 幅 = AA
         """
         filename = None
         caption = ""
         fig = None
+        width = None
 
         match_filename = re.search(r"^'filename=(\S+)", text, re.MULTILINE)
         match_caption = re.search(r"^'caption=(.+)", text, re.MULTILINE)
         match_fig = re.search(r"^'#(fig:\S+)", text, re.MULTILINE)
+        match_width = re.search(r"^'width=(\S+)", text, re.MULTILINE)
 
         if match_filename:
             filename = match_filename.group(1).strip("'" + '"')
@@ -55,8 +60,10 @@ class PlantUMLWrapper():
             caption = match_caption.group(1).strip("'" + '"')
         if match_fig:
             fig = match_fig.group(1)
+        if match_width:
+            width = match_width.group(1).strip('"' + "'")
 
-        return filename, caption, fig
+        return filename, caption, fig, width
 
     @classmethod
     def is_image(cls, elem: pf.Element) -> bool:

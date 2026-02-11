@@ -29,6 +29,7 @@ class MermaidWrapper():
     @staticmethod
     def extract_filename_caption_identifier(text: str) -> Tuple[str | None,
                                                                 str,
+                                                                str | None,
                                                                 str | None]:
         """MermaidのCodeBlockの中からファイル名、キャプション、IDを取得する
 
@@ -36,6 +37,7 @@ class MermaidWrapper():
         - %%filename=XX
         - %%caption=YY
         - %%#fig:ZZ'
+        - %%width=AA
         が記載されているとき、XX, YY, fig:ZZを返します。
 
         Args:
@@ -46,14 +48,17 @@ class MermaidWrapper():
             str | None: Mermaidで出力後のファイル名 = XX
             str: キャプション = YY
             str | None: ID = fig:ZZ
+            str | None: 幅 = AA
         """
         filename = None
         caption = ""
         fig = None
+        width = None
 
         match_filename = re.search(r"^%%filename=(\S+)", text, re.MULTILINE)
         match_caption = re.search(r"^%%caption=(.+)", text, re.MULTILINE)
         match_fig = re.search(r"^%%#(fig:\S+)", text, re.MULTILINE)
+        match_width = re.search(r"^%%width=(\S+)", text, re.MULTILINE)
 
         if match_filename:
             filename = match_filename.group(1).strip("'" + '"')
@@ -61,8 +66,10 @@ class MermaidWrapper():
             caption = match_caption.group(1).strip("'" + '"')
         if match_fig:
             fig = match_fig.group(1)
+        if match_width:
+            width = match_width.group(1).strip('"' + "'")
 
-        return filename, caption, fig
+        return filename, caption, fig, width
 
     def is_image(self, elem: pf.Element) -> bool:
         """コードブロックがMermaidかどうかを判定する

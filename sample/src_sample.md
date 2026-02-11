@@ -11,7 +11,9 @@ output:
     path: sample.docx
     toc: true
     pandoc_args: [
-        "--filter=pandoc_crossref_filter"
+        "--filter=pandoc_crossref_filter",
+        "--lua-filter=colwidth.lua",
+        "--wrap=preserve"
     ]
 pandoc_crossref_filter:
     section:
@@ -62,7 +64,7 @@ pandoc_crossref_filter:
 |`<br>`を使うと、表の中も改行できます(Word変換にも対応。)|・改行<br>・される<br>|
 |表の中でも参照が使えます|[@sec:sec1], [@fig:fig1]|
 
-: 表番号の参照のサンプルです{#tbl:tbl1}
+: 表番号の参照のサンプルです{#tbl:tbl1 colwidth="80,20"}
 
 ## PlantUMLの相互参照
 
@@ -88,6 +90,7 @@ B --> A: 応答
 'filename=test2.png
 '#fig:puml2
 'caption=処理Xの詳細
+'width=30%
 
 mainframe シーケンス2
 participant 機能B as B
@@ -106,6 +109,8 @@ C --> B: 応答
 %%filename=test_mermaid.png
 %%caption=Mermaidのテスト
 %%#fig:test_mermaid
+%%width=30%
+
 sequenceDiagram
   機能A ->> 機能B: [@sec:sec2]を参照
 ```
