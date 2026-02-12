@@ -34,11 +34,11 @@
 
 \[表3-1\]を参照します。
 
-<table data-colwidth="80,20">
+<table>
 <caption>[表3-1] 表番号の参照のサンプルです</caption>
 <colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
+<col style="width: 80%" />
+<col style="width: 20%" />
 </colgroup>
 <thead>
 <tr>
