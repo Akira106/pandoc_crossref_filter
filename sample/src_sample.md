@@ -12,7 +12,6 @@ output:
     toc: true
     pandoc_args: [
         "--filter=pandoc_crossref_filter",
-        "--lua-filter=colwidth.lua",
         "--wrap=preserve"
     ]
 pandoc_crossref_filter:

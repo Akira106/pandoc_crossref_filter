@@ -76,7 +76,7 @@ class TableCrossRef():
             # 親のTable要素に参照元(identifier)を設定する
             root_elem.identifier = identifier
 
-        # colwidth指定があればクラスに追加
+        # colwidth指定があればcolspecに追加
         if colwidth:
             # テーブルのカラム数をチェック
             num_columns = len(root_elem.colspec) if hasattr(root_elem, 'colspec') else 0
@@ -85,9 +85,9 @@ class TableCrossRef():
                 logger.error(f"Colwidth specification '{colwidth}' is invalid.")
                 sys.exit(1)
 
-            if not hasattr(root_elem, 'attributes'):
-                root_elem.attributes = {}
-            root_elem.attributes["colwidth"] = colwidth
+            list_colwidth = [float(v.strip()) / 100 for v in colwidth.split(',')]
+            for icol in range(num_columns):
+                root_elem.colspec[icol] = (root_elem.colspec[icol][0], list_colwidth[icol])
             # キャプション文字列を更新（colwidth部分を削除）
             self._set_caption_text(elem, new_caption_text)
 

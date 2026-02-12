@@ -178,10 +178,9 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
 <br>
 
-##### カラムの幅の設定{#sec:sec_table_colwidth}
+##### カラムの幅の設定{.un}
 
 追加の機能で、カラムの幅を設定できます。
-設定した値は、MarkdownをWordファイルに変換したときに反映されます。
 
 以下のように、`colwidth="X,Y,Z"`の形式で、カラムの幅をパーセンテージで指定してください。
 ただし、合計は100以下になるように設定してください。
@@ -189,42 +188,6 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 ```
 : キャプション{#tbl:XXX colwidth="30,70"}
 ```
-
-次に、Wordに変換するときに、[lua-filter/colwidth.lua](lua-filter/colwidth.lua)をPandocのフィルターとして指定してください。
-
-`例`
-
-```shell-session
-$ pandoc input.md -o output.docx --lua-filter=colwidth.lua
-```
-
-
-Luaフィルターは、以下の方法でパスを通すことができます。
-
-1. パスを直接指定する。
-2. 以下のコマンド
-
-```shell-session
-$ pandoc --version
-```
-
-を実行し、User data directoryに表示されるディレクトリを確認してください。
-そのディレクトリの中に、更にfiltersというディレクトリを作成し、その中にフィルター(*.lua)を配置してください。
-
-`例`
-
-```shell-session
-$ pandoc --version
-
-pandoc 3.6.2
-...(省略)...
-User data directory: /home/username/.local/share/pandoc
-...(省略)...
-```
-
-⇒
-
-`/home/username/.local/share/pandoc/filters/*.lua`のように、フィルターを配置します。
 
 <br>
 
@@ -415,7 +378,6 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
 以下の設定例では、対象のMarkdownを`test_export.md`というファイル名でエクスポートします。
 ※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。
-※`colwidth.lua`は[@sec:sec_table_colwidth]参照、必須ではありません。
 
 ```
 ---
@@ -425,7 +387,6 @@ output:
     pandoc_args: [
       '--to=gfm',
       '--filter=pandoc_crossref_filter',
-      '--lua-filter=colwidth.lua',
       '--wrap=preserve'
     ]
 ---
@@ -442,7 +403,6 @@ output:
 
 [@sec:sec_gfm_export]と同様に、`pandoc_args`の設定に本フィルターを追加することで、エクスポートが可能になります。
 ※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。
-※`colwidth.lua`は[@sec:sec_table_colwidth]参照、必須ではありません。
 
 `例`
 
@@ -454,7 +414,6 @@ output:
     toc: true
     pandoc_args: [
       '--filter=pandoc_crossref_filter',
-      '--lua-filter=colwidth.lua',
       '--wrap=preserve'
     ]
 ---

@@ -156,50 +156,14 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
   
 
-##### 3.1.3.1. カラムの幅の設定
+##### カラムの幅の設定
 
-追加の機能で、カラムの幅を設定できます。  
-設定した値は、MarkdownをWordファイルに変換したときに反映されます。
+追加の機能で、カラムの幅を設定できます。
 
 以下のように、`colwidth="X,Y,Z"`の形式で、カラムの幅をパーセンテージで指定してください。  
 ただし、合計は100以下になるように設定してください。
 
     : キャプション{#tbl:XXX colwidth="30,70"}
-
-次に、Wordに変換するときに、[lua-filter/colwidth.lua](lua-filter/colwidth.lua)をPandocのフィルターとして指定してください。
-
-`例`
-
-``` shell-session
-$ pandoc input.md -o output.docx --lua-filter=colwidth.lua
-```
-
-Luaフィルターは、以下の方法でパスを通すことができます。
-
-1.  パスを直接指定する。
-2.  以下のコマンド
-
-``` shell-session
-$ pandoc --version
-```
-
-を実行し、User data directoryに表示されるディレクトリを確認してください。  
-そのディレクトリの中に、更にfiltersというディレクトリを作成し、その中にフィルター(\*.lua)を配置してください。
-
-`例`
-
-``` shell-session
-$ pandoc --version
-  
-pandoc 3.6.2
-...(省略)...
-User data directory: /home/username/.local/share/pandoc
-...(省略)...
-```
-
-⇒
-
-`/home/username/.local/share/pandoc/filters/*.lua`のように、フィルターを配置します。
 
   
 
@@ -455,8 +419,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 `例`
 
 以下の設定例では、対象のMarkdownを`test_export.md`というファイル名でエクスポートします。  
-※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。  
-※`colwidth.lua`は3.1.3.1目参照、必須ではありません。
+※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。
 
     ---
     output:
@@ -465,7 +428,6 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
         pandoc_args: [
           '--to=gfm',
           '--filter=pandoc_crossref_filter',
-          '--lua-filter=colwidth.lua',
           '--wrap=preserve'
         ]
     ---
@@ -480,8 +442,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 #### 3.5.2. Wordファイルへの変換
 
 3.5.1項と同様に、`pandoc_args`の設定に本フィルターを追加することで、エクスポートが可能になります。  
-※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。  
-※`colwidth.lua`は3.1.3.1目参照、必須ではありません。
+※エクスポート設定の詳細は、Markdown Preview Enhancedのマニュアルをご参照ください。
 
 `例`
 
@@ -492,7 +453,6 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
         toc: true
         pandoc_args: [
           '--filter=pandoc_crossref_filter',
-          '--lua-filter=colwidth.lua',
           '--wrap=preserve'
         ]
     ---
