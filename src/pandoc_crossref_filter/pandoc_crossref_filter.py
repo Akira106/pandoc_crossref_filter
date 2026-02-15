@@ -122,15 +122,10 @@ def action(elem, doc):
             elem, doc.list_present_section_numbers)
         return image
 
-    # 表(のキャプション)
-    elif isinstance(elem, pf.Caption):
-        doc.table_cross_ref.register_table(
-            elem, doc.list_present_section_numbers)
-
     # 表
     elif isinstance(elem, pf.Table):
-        # セルのマージ、箇条書き
-        doc.table_cross_ref.format_table(elem)
+        doc.table_cross_ref.register_table(
+            elem, doc.list_present_section_numbers)
 
     # 参照を上書きするべき対象を一時的に記憶しておく
     # (参照が後続で定義されているかもしれないので、ここでは上書きできない)
