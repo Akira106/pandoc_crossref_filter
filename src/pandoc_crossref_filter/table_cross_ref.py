@@ -308,3 +308,45 @@ class TableCrossRef():
                 table_number += " " + table_title
 
         return table_number
+
+    def format_table(self, elem: pf.Table) -> None:
+        """表の書式を整える
+
+        - セルの値が"->"の場合は、左隣のセルと結合する
+
+        Args:
+            elem (pf.Table):
+                書式を整える表要素
+        """
+        # テーブルのヘッダー内で処理
+        self._format_table(elem.head)
+
+        # テーブルのボディで処理
+        for body in elem.content:
+            self._format_table(body)
+
+    def _format_table(self, elem: pf.TableBody | pf.TableHead) -> None:
+        """表の書式を整える
+
+        self.format_tableから呼び出される関数
+        """
+        for irow, row in enumerate(elem.content):
+            left_cell_index = None
+            formated_row = []
+            is_required_merge = False
+            for icol, cell in enumerate(row.content):
+                # セル内の内容を文字列化
+                cell_text = pf.stringify(cell.content)
+                # -> を左隣のセルと結合
+                if "->" == cell_text:
+                    if left_cell_index is None:
+                        logger.error(f"'->' found in the first cell of a row, which cannot be merged.")
+                        sys.exit(1)
+                    row.content[left_cell_index].colspan += 1
+                    is_required_merge = True
+                else:
+                    left_cell_index = icol
+                    formated_row.append(cell)
+            # 書式を整えた行で上書き
+            if is_required_merge:
+                row.content = formated_row
