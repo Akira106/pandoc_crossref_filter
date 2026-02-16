@@ -47,24 +47,26 @@ class TableCrossRef():
         self.dict_table_number_increment: Dict = {}
 
     def register_table(self,
-                       elem: pf.Caption,
+                       elem: pf.Table,
                        list_present_section_numbers: List
                        ) -> None:
         """表番号の登録
 
         Args:
-            elem: pf.Caption:
-                表番号のキャプション
+            elem: pf.Table:
+                表
             list_present_section_numbers: List:
                 セクション番号
         """
-        # Table要素のキャプションでなければ終了
-        root_elem = utils.get_root_elem(elem)
-        if not isinstance(root_elem, pf.Table):
-            return
+        # 表の整形
+        self._format_table(elem)
 
+        # キャプションの取得
+        caption = elem.caption
+        if not caption:
+            return
         # キャプションのテキスト情報と表定義の取得
-        caption_text = pf.stringify(elem.content)
+        caption_text = pf.stringify(caption.content)
         if not caption_text:  # キャプションが無ければ何もしない
             return
         identifier, colwidth, new_caption_text = self._get_table_identifier(caption_text)
@@ -73,13 +75,13 @@ class TableCrossRef():
             return
 
         if self.enable_link and identifier:
-            # 親のTable要素に参照元(identifier)を設定する
-            root_elem.identifier = identifier
+            # Table要素に参照元(identifier)を設定する
+            elem.identifier = identifier
 
         # colwidth指定があればcolspecに追加
         if colwidth:
             # テーブルのカラム数をチェック
-            num_columns = len(root_elem.colspec) if hasattr(root_elem, 'colspec') else 0
+            num_columns = len(elem.colspec) if hasattr(elem, 'colspec') else 0
             colwidth_valid = self._validate_colwidth(colwidth, num_columns)
             if not colwidth_valid:
                 logger.error(f"Colwidth specification '{colwidth}' is invalid.")
@@ -87,9 +89,9 @@ class TableCrossRef():
 
             list_colwidth = [float(v.strip()) / 100 for v in colwidth.split(',')]
             for icol in range(num_columns):
-                root_elem.colspec[icol] = (root_elem.colspec[icol][0], list_colwidth[icol])
+                elem.colspec[icol] = (elem.colspec[icol][0], list_colwidth[icol])
             # キャプション文字列を更新（colwidth部分を削除）
-            self._set_caption_text(elem, new_caption_text)
+            self._set_caption_text(caption, new_caption_text)
 
         # identifier がない場合は表番号処理をスキップ
         if identifier is None:
@@ -104,7 +106,7 @@ class TableCrossRef():
         # キャプションに表番号を追加する
         new_caption_text = \
             self.table_title_template % table_number + " " + new_caption_text
-        self._set_caption_text(elem, new_caption_text)
+        self._set_caption_text(caption, new_caption_text)
 
     def _get_table_identifier(self,
                               caption_text: str) -> Tuple[None | str, str, str]:
@@ -308,3 +310,62 @@ class TableCrossRef():
                 table_number += " " + table_title
 
         return table_number
+
+    def _format_table(self, elem: pf.Table) -> None:
+        """表の書式を整える
+
+        - セルの値が"->"の場合は、左隣のセルと結合する
+        - セルの値が"〃"の場合は、上のセルと結合する
+
+        Args:
+            elem (pf.Table):
+                書式を整える表要素
+        """
+        # テーブルのヘッダー内で処理
+        self._format_table_inner(elem.head)
+
+        # テーブルのボディで処理
+        for body in elem.content:
+            self._format_table_inner(body)
+
+    def _format_table_inner(self, elem: pf.TableBody | pf.TableHead) -> None:
+        """表の書式を整える
+
+        self._format_tableから呼び出される関数
+        """
+        num_columns = len(elem.content[0].content) if elem.content else 0
+        list_upper_row_index = [None] * num_columns
+        for irow, row in enumerate(elem.content):
+            left_cell_index = None
+            formatted_row = []
+            is_required_merge = False
+            for icol, cell in enumerate(row.content):
+                # セル内の内容を文字列化
+                cell_text = pf.stringify(cell.content)
+                # -> を左隣のセルと結合
+                if "->" == cell_text:
+                    if left_cell_index is None:
+                        logger.error("'->' found in the first cell of a row, which cannot be merged.")
+                        sys.exit(1)
+                    # 強制的にHTML形式のテーブルにするために、初回は空のdivを挿入する
+                    if row.content[left_cell_index].colspan == 1:
+                        row.content[left_cell_index].content.append(pf.Div())
+                    row.content[left_cell_index].colspan += 1
+                    is_required_merge = True
+                elif "〃" == cell_text:
+                    upper_row_index = list_upper_row_index[icol]
+                    if upper_row_index is None:
+                        logger.error("'〃' found in the first row of a table, which cannot be merged.")
+                        sys.exit(1)
+                    # 強制的にHTML形式のテーブルにするために、初回は空のdivを挿入する
+                    if elem.content[upper_row_index].content[icol].rowspan == 1:
+                        elem.content[upper_row_index].content[icol].content.append(pf.Div())
+                    elem.content[upper_row_index].content[icol].rowspan += 1
+                    is_required_merge = True
+                else:
+                    left_cell_index = icol
+                    list_upper_row_index[icol] = irow
+                    formatted_row.append(cell)
+            # 書式を整えた行で上書き
+            if is_required_merge:
+                row.content = formatted_row

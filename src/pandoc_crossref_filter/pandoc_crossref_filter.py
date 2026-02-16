@@ -122,8 +122,8 @@ def action(elem, doc):
             elem, doc.list_present_section_numbers)
         return image
 
-    # 表(のキャプション)
-    elif isinstance(elem, pf.Caption):
+    # 表
+    elif isinstance(elem, pf.Table):
         doc.table_cross_ref.register_table(
             elem, doc.list_present_section_numbers)
 

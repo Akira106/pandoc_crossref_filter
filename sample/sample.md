@@ -64,6 +64,58 @@
 </tbody>
 </table>
 
+  
+
+追加の機能で、テーブル内のセルを結合することができます。  
+セルの中に、以下の文字列を記述することで、Pandocで変換するときに、セルが結合されます。
+
+- 左のセルと結合：`->`
+- 上のセルと結合：`〃`
+
+例：
+
+<table>
+<caption>[表3-2] セルの結合の例</caption>
+<colgroup>
+<col style="width: 5%" />
+<col style="width: 15%" />
+<col style="width: 30%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th colspan="2" style="text-align: left;">項目
+<div>
+&#10;</div></th>
+<th style="text-align: left;">型</th>
+<th style="text-align: left;">説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" style="text-align: left;">TEST
+<div>
+&#10;</div></td>
+<td style="text-align: left;">object</td>
+<td style="text-align: left;">object型の項目です。</td>
+</tr>
+<tr>
+<td rowspan="2" style="text-align: left;"><div>
+&#10;</div></td>
+<td style="text-align: left;">key1</td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">key1の設定値です。</td>
+</tr>
+<tr>
+<td style="text-align: left;">key2</td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">key2の設定値です。</td>
+</tr>
+</tbody>
+</table>
+
+  
+
 ## 4. PlantUMLの相互参照
 
 特殊な記法ですが、plantumlで作成した図も相互参照できます。
