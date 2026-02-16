@@ -345,15 +345,21 @@ class TableCrossRef():
                 # -> を左隣のセルと結合
                 if "->" == cell_text:
                     if left_cell_index is None:
-                        logger.error(f"'->' found in the first cell of a row, which cannot be merged.")
+                        logger.error("'->' found in the first cell of a row, which cannot be merged.")
                         sys.exit(1)
+                    # 強制的にHTML形式のテーブルにするために、初回は空のdivを挿入する
+                    if row.content[left_cell_index].colspan == 1:
+                        row.content[left_cell_index].content.append(pf.Div())
                     row.content[left_cell_index].colspan += 1
                     is_required_merge = True
                 elif "〃" == cell_text:
                     upper_row_index = list_upper_row_index[icol]
                     if upper_row_index is None:
-                        logger.error(f"'〃' found in the first row of a table, which cannot be merged.")
+                        logger.error("'〃' found in the first row of a table, which cannot be merged.")
                         sys.exit(1)
+                    # 強制的にHTML形式のテーブルにするために、初回は空のdivを挿入する
+                    if elem.content[upper_row_index].content[icol].rowspan == 1:
+                        elem.content[upper_row_index].content[icol].content.append(pf.Div())
                     elem.content[upper_row_index].content[icol].rowspan += 1
                     is_required_merge = True
                 else:
