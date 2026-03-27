@@ -73,6 +73,9 @@ class CodeBlockRef():
             # ファイル名、キャプション、ID、幅を取得する
             filename, caption, identifier, width = \
                 wrapper.extract_filename_caption_identifier(elem.text)
+            # ファイル名が定義されていなければmd5をファイル名とする
+            if not filename:
+                filename = self._md5(elem.text)
 
             # Markdown Preview Enhancedでプレビューしている場合は、キャプションとIDを追加する
             if wrapper.is_image_when_MPE_preview(elem.attributes):
