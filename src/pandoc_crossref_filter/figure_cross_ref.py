@@ -10,7 +10,7 @@ logger = utils.get_logger()
 
 
 class FigureCrossRef():
-    def __init__(self, config: Dict, enable_link: bool) -> None:
+    def __init__(self, config: Dict, enable_link: bool, disable_width: bool) -> None:
         """コンストラクタ
 
         Args:
@@ -28,6 +28,9 @@ class FigureCrossRef():
                     図番号の区切り
             enable_link (bool):
                 参照にリンクを張るかどうか
+            disable_width (bool):
+                図の幅の指定を無効にするかどうか
+                AzureDevOpsの場合、幅の指定があると、画像が表示されないため、幅の指定を無効にするオプションを追加
         """
         self.figure_number_count_level: int = int(
             config.get("figure_number_count_level", "0"))
@@ -36,6 +39,7 @@ class FigureCrossRef():
         self.delimiter: str = \
             config.get("delimiter", "-")
         self.enable_link: bool = enable_link
+        self.disable_width: bool = disable_width
 
         # 参照用の図番号を格納する辞書
         self.references: Dict = {}
@@ -62,6 +66,15 @@ class FigureCrossRef():
             pf.Element | List[pf.Element]:
                 Noneではない場合、キャプションを追加して要素を差し替えます。
         """
+        # disable_widthがTrueの場合、図の幅の指定を無効にする
+        if self.disable_width:
+            if isinstance(elem, pf.Image):
+                elem.attributes.pop("width", None)
+            elif isinstance(elem, pf.Figure):
+                image = elem.content[0].content[0]
+                if isinstance(image, pf.Image):
+                    image.attributes.pop("width", None)
+
         # 参照が定義されていなければ何もしない
         if not elem.identifier.startswith("fig:"):
             return elem
