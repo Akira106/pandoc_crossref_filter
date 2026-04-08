@@ -5,10 +5,9 @@ import re
 
 import requests
 import panflute as pf
-import plantuml
 
 from . import utils
-from .config import PLANTUML_SERVER_URL
+from .config import KROKI_SERVER_URL
 
 logger = utils.get_logger()
 
@@ -160,13 +159,18 @@ class PlantUMLWrapper():
             text (str): PlantUMLのテキスト
         """
         fmt = "svg" if filename.endswith(".svg") else "png"
-        encode_text = plantuml.deflate_and_encode(text)
-        url = PLANTUML_SERVER_URL + f"/{fmt}/{encode_text}"
 
         try:
-            ret = requests.get(url)
+            ret = requests.post(
+                KROKI_SERVER_URL,
+                json={
+                    "diagram_source": text,
+                    "diagram_type": "plantuml",
+                    "output_format": fmt
+                }
+            )
         except Exception:
-            logger.error(f"Failed to connect to {PLANTUML_SERVER_URL}.")
+            logger.error(f"Failed to connect to {KROKI_SERVER_URL}.")
             sys.exit(1)
         if ret.status_code != 200:
             logger.error(f"Failed to export {filename}.")

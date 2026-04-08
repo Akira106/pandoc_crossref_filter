@@ -54,30 +54,35 @@ $ git clone https://github.com/Akira106/pandoc_crossref_filter.git
 $ cd pandoc_crossref_filter
 ```
 
-続いて、PlantUMLを使用する場合、PlantUMLサーバーのURLを設定します。
-
-```shell-session
-$ vi src/pandoc_crossref_filter/config.py
-```
-
-- 例：公開サーバーを使用する場合
-
-```
-PLANTUML_SERVER_URL = "https://www.plantuml.com/plantuml"
-```
-
-- 例：自前でサーバーを立てる場合
+続いて、PlantUMLまたはMermaidを使用する場合、PlantUMLサーバーとMermaidサーバーを設定します。
 
 例えば以下のようなdocker-composeファイルで、サーバーを立てます。
 
 ```yaml
 version: '3'
 services:
+  # PlantUMLサーバー
   plantuml-server:
     image: plantuml/plantuml-server
     container_name: plantuml-local-server
     ports:
       - "8080:8080"
+  # Mermaidサーバー
+  kroki:
+    image: yuzutech/kroki
+    container_name: kroki
+    ports:
+      - "8081:8000"
+    environment:
+      - KROKI_MERMAID_HOST=mermaid
+      - KROKI_MERMAID_PORT=8002
+    depends_on:
+      - mermaid
+  mermaid:
+    image: yuzutech/kroki-mermaid
+    container_name: kroki-mermaid
+    expose:
+      - "8002"
 ```
 
 ```shell-session
@@ -88,21 +93,13 @@ $ docker-compose up -d
 
 ```
 PLANTUML_SERVER_URL = "http://127.0.0.1:8080"
+MERMAID_SERVER_URL = "http://127.0.0.1:8081"
 ```
 
 最後に、pipでインストールします。
 
-- Mermaidを使用しない場合
-
 ```shell-session
 $ pip3 install .
-```
-
-- Mermaidを使用する場合
-
-```shell-session
-$ pip3 install .[all]
-$ playwright install chromium
 ```
 
 ※ 上記の実行時に`XXXXX which is not on PATH.`のようなWarningメッセージが出た場合、環境変数`PATH`に、インストール先のパスを追加してください。

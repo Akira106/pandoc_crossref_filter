@@ -7,7 +7,7 @@ import panflute as pf
 import requests
 
 from . import utils
-from .config import MERMAID_SERVER_URL
+from .config import KROKI_SERVER_URL
 
 
 logger = utils.get_logger()
@@ -149,17 +149,19 @@ class MermaidWrapper():
             filename (str): 出力先の画像ファイル名
             text (str): Mermaidのテキスト
         """
-        output_format = "svg" if filename.endswith(".svg") else "png"
-        url = f"{MERMAID_SERVER_URL}/mermaid/{output_format}"
+        fmt = "svg" if filename.endswith(".svg") else "png"
 
         try:
             ret = requests.post(
-                url,
-                data=text.encode("utf-8"),
-                headers={"Content-Type": "text/plain"}
+                KROKI_SERVER_URL,
+                json={
+                    "diagram_source": text,
+                    "diagram_type": "mermaid",
+                    "output_format": fmt
+                }
             )
         except Exception:
-            logger.error(f"Failed to connect to {MERMAID_SERVER_URL}.")
+            logger.error(f"Failed to connect to {KROKI_SERVER_URL}.")
             sys.exit(1)
 
         if ret.status_code != 200:
