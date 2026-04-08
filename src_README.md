@@ -54,25 +54,18 @@ $ git clone https://github.com/Akira106/pandoc_crossref_filter.git
 $ cd pandoc_crossref_filter
 ```
 
-続いて、PlantUMLまたはMermaidを使用する場合、PlantUMLサーバーとMermaidサーバーを設定します。
+続いて、PlantUMLまたはMermaidを使用する場合、Krokiサーバーを設定します。
 
 例えば以下のようなdocker-composeファイルで、サーバーを立てます。
 
 ```yaml
 version: '3'
 services:
-  # PlantUMLサーバー
-  plantuml-server:
-    image: plantuml/plantuml-server
-    container_name: plantuml-local-server
-    ports:
-      - "8080:8080"
-  # Mermaidサーバー
   kroki:
     image: yuzutech/kroki
     container_name: kroki
     ports:
-      - "8081:8000"
+      - "8080:8000"
     environment:
       - KROKI_MERMAID_HOST=mermaid
       - KROKI_MERMAID_PORT=8002
@@ -92,8 +85,7 @@ $ docker-compose up -d
 `config.py`には、以下のように記述します。
 
 ```
-PLANTUML_SERVER_URL = "http://127.0.0.1:8080"
-MERMAID_SERVER_URL = "http://127.0.0.1:8081"
+KROKI_SERVER_URL = "http://127.0.0.1:8080"
 ```
 
 最後に、pipでインストールします。
