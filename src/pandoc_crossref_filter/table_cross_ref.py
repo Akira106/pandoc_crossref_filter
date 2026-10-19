@@ -333,39 +333,47 @@ class TableCrossRef():
 
         self._format_tableから呼び出される関数
         """
-        num_columns = len(elem.content[0].content) if elem.content else 0
-        list_upper_row_index = [None] * num_columns
-        for irow, row in enumerate(elem.content):
-            left_cell_index = None
+        upper_cells: Dict[int, pf.TableCell] = {}
+        for row in elem.content:
+            left_cell = None
             formatted_row = []
             is_required_merge = False
-            for icol, cell in enumerate(row.content):
+            logical_column = 0
+            for cell in list(row.content):
                 # セル内の内容を文字列化
                 cell_text = pf.stringify(cell.content)
                 # -> を左隣のセルと結合
                 if "->" == cell_text:
-                    if left_cell_index is None:
+                    if left_cell is None:
                         logger.error("'->' found in the first cell of a row, which cannot be merged.")
                         sys.exit(1)
                     # 強制的にHTML形式のテーブルにするために、初回は空のdivを挿入する
-                    if row.content[left_cell_index].colspan == 1:
-                        row.content[left_cell_index].content.append(pf.Div())
-                    row.content[left_cell_index].colspan += 1
+                    if left_cell.colspan == 1:
+                        left_cell.content.append(pf.Div())
+                    left_cell.colspan += cell.colspan
+                    for column in range(
+                            logical_column,
+                            logical_column + cell.colspan):
+                        upper_cells[column] = left_cell
                     is_required_merge = True
                 elif "〃" == cell_text:
-                    upper_row_index = list_upper_row_index[icol]
-                    if upper_row_index is None:
+                    upper_cell = upper_cells.get(logical_column)
+                    if upper_cell is None:
                         logger.error("'〃' found in the first row of a table, which cannot be merged.")
                         sys.exit(1)
                     # 強制的にHTML形式のテーブルにするために、初回は空のdivを挿入する
-                    if elem.content[upper_row_index].content[icol].rowspan == 1:
-                        elem.content[upper_row_index].content[icol].content.append(pf.Div())
-                    elem.content[upper_row_index].content[icol].rowspan += 1
+                    if upper_cell.rowspan == 1:
+                        upper_cell.content.append(pf.Div())
+                    upper_cell.rowspan += cell.rowspan
                     is_required_merge = True
                 else:
-                    left_cell_index = icol
-                    list_upper_row_index[icol] = irow
+                    left_cell = cell
                     formatted_row.append(cell)
+                    for column in range(
+                            logical_column,
+                            logical_column + cell.colspan):
+                        upper_cells[column] = cell
+                logical_column += cell.colspan
             # 書式を整えた行で上書き
             if is_required_merge:
                 row.content = formatted_row
