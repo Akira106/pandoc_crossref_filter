@@ -54,30 +54,28 @@ $ git clone https://github.com/Akira106/pandoc_crossref_filter.git
 $ cd pandoc_crossref_filter
 ```
 
-続いて、PlantUMLを使用する場合、PlantUMLサーバーのURLを設定します。
-
-```shell-session
-$ vi src/pandoc_crossref_filter/config.py
-```
-
-- 例：公開サーバーを使用する場合
-
-```
-PLANTUML_SERVER_URL = "https://www.plantuml.com/plantuml"
-```
-
-- 例：自前でサーバーを立てる場合
+続いて、PlantUMLまたはMermaidを使用する場合、Krokiサーバーを設定します。
 
 例えば以下のようなdocker-composeファイルで、サーバーを立てます。
 
 ```yaml
 version: '3'
 services:
-  plantuml-server:
-    image: plantuml/plantuml-server
-    container_name: plantuml-local-server
+  kroki:
+    image: yuzutech/kroki
+    container_name: kroki
     ports:
-      - "8080:8080"
+      - "8080:8000"
+    environment:
+      - KROKI_MERMAID_HOST=mermaid
+      - KROKI_MERMAID_PORT=8002
+    depends_on:
+      - mermaid
+  mermaid:
+    image: yuzutech/kroki-mermaid
+    container_name: kroki-mermaid
+    expose:
+      - "8002"
 ```
 
 ```shell-session
@@ -87,22 +85,13 @@ $ docker-compose up -d
 `config.py`には、以下のように記述します。
 
 ```
-PLANTUML_SERVER_URL = "http://127.0.0.1:8080"
+KROKI_SERVER_URL = "http://127.0.0.1:8080"
 ```
 
 最後に、pipでインストールします。
 
-- Mermaidを使用しない場合
-
 ```shell-session
 $ pip3 install .
-```
-
-- Mermaidを使用する場合
-
-```shell-session
-$ pip3 install .[all]
-$ playwright install chromium
 ```
 
 ※ 上記の実行時に`XXXXX which is not on PATH.`のようなWarningメッセージが出た場合、環境変数`PATH`に、インストール先のパスを追加してください。
@@ -116,19 +105,18 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 |VSCodeの設定項目|設定値|
 |:---|:---|
 |Markdown-preview-enhanced: Pandoc Arguments|["--filter=pandoc_crossref_filter"]|
-|Markdown-preview-enhanced: Use Pandoc Parser|チェックをつける|
+|Markdown-preview-enhanced: Markdown Parser|`pandoc`を選択|
 : Markdown Preview Enhancedのプレビュー機能との連携の設定{#tbl:tbl_mpe_preview}
 
 <br>
 
 ### Markdown Preview EnhancedのPlantUMLの設定
 
-また、Markdown Preview EnhancedでPlantUMLを使用する場合は、以下の**いずれか**の設定が必要です。
+また、Markdown Preview EnhancedでPlantUMLを使用する場合は、以下の設定が必要です。
 
 |VSCodeの設定項目|設定値|
 |:---|:---|
-|Markdown-preview-enhanced: Plantuml Jar Path|PlantUMLの.jarファイルをダウンロードして、そのパスを設定する。|
-|Markdown-preview-enhanced: Plantuml Server|`PlantUMLサーバーのURL`/svg|
+|Markdown-preview-enhanced: Plantuml Server|`KrokiサーバーのURL`/plantuml/svg|
 : Markdown Preview EnhancedのPlantUMLの設定{#tbl:tbl_mpe_plantuml}
 
 ## 使い方
@@ -191,6 +179,25 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
 <br>
 
+##### セルの結合{.un}
+
+追加の機能で、テーブル内のセルを結合することができます。
+セルの中に、以下の文字列を記述することで、Pandocで変換するときに、セルが結合されます。
+
+- 左のセルと結合：`->`
+- 上のセルと結合：`〃`
+
+例：
+
+|項目|->|型|説明|
+|:---|:---|:---|:---|
+|TEST|->|object|object型の項目です。|
+||key1|string|key1の設定値です。|
+|〃|key2|integer|key2の設定値です。|
+: セルの結合の例{#tbl:example_cell_merge colwidth="5,15,30,50"}
+
+<br>
+
 ##### 参考{.un}
 Markdown Preview Enhancedを使用する場合、import機能で外部CSVファイルを表として使用するこができます。
 
@@ -210,7 +217,7 @@ Markdown Preview Enhancedを使用する場合、import機能で外部CSVファ�
   - 図番号の挿入(オプション)：`'#fig:XXX`
   - キャプション：`'caption=YYY`
   - 出力画像のファイル名：`'filename=ZZZ`
-  - 画像幅(オプション)：`'width=WWW`
+  - 画像幅(オプション)：`'width=WWW` (**※2**)
 
 
 **※1**
@@ -226,6 +233,10 @@ Markdown Preview Enhancedを使用する場合、import機能で外部CSVファ�
 
     Bob -> Alice : hello
     ```
+
+**※2**
+`width`を指定しても、出力フォーマットがgfm(Git Flavored Markdown)の場合は、無効化して出力します。  
+これは、AzureDevOpsというレポジトリが、対応するMarkdownの表記に対応しておらず、画像が非表示になってしまうためです。  
 
 #### Mermaidへの図番号の挿入 {#sec:sec_mermaid_insert}
 
@@ -296,7 +307,7 @@ pandoc_crossref_filter:
 
 - `section`の設定値
 
-|設置値|型|デフォルト値|内容|
+|項目|型|デフォルト値|内容|
 |:---|:---|:---|:---|
 |auto_section|boolean|false|ヘッダーの先頭に、自動でセクション番号を追加します。|
 |start_header_level|integer|1|セクション番号のカウントを開始するヘッダーのレベルを設定します。例えば2を設定した場合、ヘッダー1はセクション番号のカウントに含まれなくなります。|
@@ -307,7 +318,7 @@ pandoc_crossref_filter:
 
 - `figure`の設定値
 
-|設置値|型|デフォルト値|内容|
+|項目|型|デフォルト値|内容|
 |:---|:---|:---|:---|
 |figure_number_count_level|integer|0|図番号の連番をカウントするヘッダーのレベルです。<br>例：<br>・0を設定：`図X`のように、ドキュメント全体で連番を使用します。<br>・1を設定：`図1-X`のように、章番号ごとに連番をカウントします。<br>・負の値を設定：個別のヘッダーごとに連番をカウントします。|
 |figure_title_template|string|"[図%s]"|図番号の文字列のテンプレートです。`%s`の中に実際の図番号が挿入されます。|
@@ -316,7 +327,7 @@ pandoc_crossref_filter:
 
 - `table`の設定値
 
-|設置値|型|デフォルト値|内容|
+|項目|型|デフォルト値|内容|
 |:---|:---|:---|:---|
 |table_number_count_level|integer|0|表番号の連番をカウントするヘッダーのレベルです。<br>例：<br>・0を設定：`表X`のように、ドキュメント全体で連番を使用します。<br>・1を設定：`表1-X`のように、章番号ごとに連番をカウントします。<br>・負の値を設定：個別のヘッダーごとに連番をカウントします。|
 |table_title_template|string|"[表%s]"|表番号の文字列のテンプレートです。`%s`の中に実際の表番号が挿入されます。|
@@ -325,7 +336,7 @@ pandoc_crossref_filter:
 
 - `code_block`の設定値
 
-|設置値|型|デフォルト値|内容|
+|項目|型|デフォルト値|内容|
 |:---|:---|:---|:---|
 |save_dir|string|"assets"|PlantUML/Mermaidを画像出力したときの、出力先のディレクトリのパスです。|
 : コードブロックの設定項目{#tbl:tbl_config_code_block}

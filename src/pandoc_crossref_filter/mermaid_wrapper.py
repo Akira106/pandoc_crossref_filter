@@ -1,18 +1,14 @@
 from typing import Tuple, List, Dict
 import json
-import sys
 import re
+import sys
 
 import panflute as pf
-import asyncio
+import requests
 
 from . import utils
+from .config import KROKI_SERVER_URL
 
-try:
-    from mermaid_cli import render_mermaid
-    ENABLE_MERMAID = True
-except ImportError:
-    ENABLE_MERMAID = False
 
 logger = utils.get_logger()
 
@@ -23,8 +19,6 @@ class MermaidWrapper():
         """
         # Mermaidで出力するべきコードブロック
         self.list_mmd: List[Dict] = []
-        # MermaidWrapperがインストールされていないときの警告を1回だけだす
-        self.reported_warning = False
 
     @staticmethod
     def extract_filename_caption_identifier(text: str) -> Tuple[str | None,
@@ -85,10 +79,6 @@ class MermaidWrapper():
         """
         if self._is_image_when_export(elem.classes) or \
            self.is_image_when_MPE_preview(elem.attributes):
-            if ENABLE_MERMAID is False and self.reported_warning is False:
-                logger.warning(
-                    "mermaid is not installed in pandoc_crossref_filter")
-                self.reported_warning = True
             return True
 
         return False
@@ -148,36 +138,36 @@ class MermaidWrapper():
 
     def export_images(self) -> None:
         """Mermaid画像の出力"""
-        # mermaid-cliがインストールされていなければ終了
-        if ENABLE_MERMAID is False:
-            return
-
         # 画像に変換する
         for mmd in self.list_mmd:
-            asyncio.run(self._export_image(mmd["filename"], mmd["elem"].text))
+            self._export_image(mmd["filename"], mmd["elem"].text)
 
-    async def _export_image(self, filename: str, text: str) -> None:
+    def _export_image(self, filename: str, text: str) -> None:
         """Mermaidのテキストを画像に出力する
 
         Args:
             filename (str): 出力先の画像ファイル名
             text (str): Mermaidのテキスト
         """
-        # エラーすることがあるのでリトライする
-        for _ in range(2):
-            try:
-                _, _, svg_data = await render_mermaid(
-                    text,
-                    output_format=("svg" if filename.endswith(".svg") else "png"),
-                    background_color="white",
-                    mermaid_config={"theme": "forest"}
-                )
-                with open(filename, "wb") as f:
-                    f.write(svg_data)
-                return
+        fmt = "svg" if filename.endswith(".svg") else "png"
 
-            except Exception:
-                pass
+        try:
+            ret = requests.post(
+                KROKI_SERVER_URL,
+                json={
+                    "diagram_source": text,
+                    "diagram_type": "mermaid",
+                    "output_format": fmt
+                }
+            )
+        except Exception:
+            logger.error(f"Failed to connect to {KROKI_SERVER_URL}.")
+            sys.exit(1)
 
-        logger.error(f"Failed to export {filename}.")
-        sys.exit(1)
+        if ret.status_code != 200:
+            logger.error(f"Failed to export {filename}.")
+            sys.exit(1)
+
+        # ファイル保存
+        with open(filename, "wb") as f:
+            f.write(ret.content)

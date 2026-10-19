@@ -41,30 +41,28 @@ $ git clone https://github.com/Akira106/pandoc_crossref_filter.git
 $ cd pandoc_crossref_filter
 ```
 
-続いて、PlantUMLを使用する場合、PlantUMLサーバーのURLを設定します。
-
-``` shell-session
-$ vi src/pandoc_crossref_filter/config.py
-```
-
-- 例：公開サーバーを使用する場合
-
-<!-- -->
-
-    PLANTUML_SERVER_URL = "https://www.plantuml.com/plantuml"
-
-- 例：自前でサーバーを立てる場合
+続いて、PlantUMLまたはMermaidを使用する場合、Krokiサーバーを設定します。
 
 例えば以下のようなdocker-composeファイルで、サーバーを立てます。
 
 ``` yaml
 version: '3'
 services:
-  plantuml-server:
-    image: plantuml/plantuml-server
-    container_name: plantuml-local-server
+  kroki:
+    image: yuzutech/kroki
+    container_name: kroki
     ports:
-      - "8080:8080"
+      - "8080:8000"
+    environment:
+      - KROKI_MERMAID_HOST=mermaid
+      - KROKI_MERMAID_PORT=8002
+    depends_on:
+      - mermaid
+  mermaid:
+    image: yuzutech/kroki-mermaid
+    container_name: kroki-mermaid
+    expose:
+      - "8002"
 ```
 
 ``` shell-session
@@ -73,21 +71,12 @@ $ docker-compose up -d
 
 `config.py`には、以下のように記述します。
 
-    PLANTUML_SERVER_URL = "http://127.0.0.1:8080"
+    KROKI_SERVER_URL = "http://127.0.0.1:8080"
 
 最後に、pipでインストールします。
 
-- Mermaidを使用しない場合
-
 ``` shell-session
 $ pip3 install .
-```
-
-- Mermaidを使用する場合
-
-``` shell-session
-$ pip3 install .[all]
-$ playwright install chromium
 ```
 
 ※ 上記の実行時に`XXXXX which is not on PATH.`のようなWarningメッセージが出た場合、環境変数`PATH`に、インストール先のパスを追加してください。
@@ -101,7 +90,7 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 | VSCodeの設定項目 | 設定値 |
 |:---|:---|
 | Markdown-preview-enhanced: Pandoc Arguments | \[“–filter=pandoc_crossref_filter”\] |
-| Markdown-preview-enhanced: Use Pandoc Parser | チェックをつける |
+|Markdown-preview-enhanced: Markdown Parser|`pandoc`を選択|
 
 \[表2-1\] Markdown Preview Enhancedのプレビュー機能との連携の設定
 
@@ -109,12 +98,11 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
 ### 2.4. Markdown Preview EnhancedのPlantUMLの設定
 
-また、Markdown Preview EnhancedでPlantUMLを使用する場合は、以下の**いずれか**の設定が必要です。
+また、Markdown Preview EnhancedでPlantUMLを使用する場合は、以下の設定が必要です。
 
 | VSCodeの設定項目 | 設定値 |
 |:---|:---|
-| Markdown-preview-enhanced: Plantuml Jar Path | PlantUMLの.jarファイルをダウンロードして、そのパスを設定する。 |
-| Markdown-preview-enhanced: Plantuml Server | `PlantUMLサーバーのURL`/svg |
+| Markdown-preview-enhanced: Plantuml Server | `KrokiサーバーのURL`/plantuml/svg |
 
 \[表2-2\] Markdown Preview EnhancedのPlantUMLの設定
 
@@ -167,6 +155,58 @@ Markdown Preview Enhancedのプレビュー画面で、本フィルターの機�
 
   
 
+##### セルの結合
+
+追加の機能で、テーブル内のセルを結合することができます。  
+セルの中に、以下の文字列を記述することで、Pandocで変換するときに、セルが結合されます。
+
+- 左のセルと結合：`->`
+- 上のセルと結合：`〃`
+
+例：
+
+<table>
+<caption>[表3-1] セルの結合の例</caption>
+<colgroup>
+<col style="width: 5%" />
+<col style="width: 15%" />
+<col style="width: 30%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th colspan="2" style="text-align: left;">項目
+<div>
+&#10;</div></th>
+<th style="text-align: left;">型</th>
+<th style="text-align: left;">説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" style="text-align: left;">TEST
+<div>
+&#10;</div></td>
+<td style="text-align: left;">object</td>
+<td style="text-align: left;">object型の項目です。</td>
+</tr>
+<tr>
+<td rowspan="2" style="text-align: left;"><div>
+&#10;</div></td>
+<td style="text-align: left;">key1</td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">key1の設定値です。</td>
+</tr>
+<tr>
+<td style="text-align: left;">key2</td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">key2の設定値です。</td>
+</tr>
+</tbody>
+</table>
+
+  
+
 ##### 参考
 
 Markdown Preview Enhancedを使用する場合、import機能で外部CSVファイルを表として使用するこができます。
@@ -186,7 +226,7 @@ Markdown Preview Enhancedを使用する場合、import機能で外部CSVファ�
 - 図番号の挿入(オプション)：`'#fig:XXX`
 - キャプション：`'caption=YYY`
 - 出力画像のファイル名：`'filename=ZZZ`
-- 画像幅(オプション)：`'width=WWW`
+- 画像幅(オプション)：`'width=WWW` (**※2**)
 
 **※1**  
 \`\`\`plantuml\`\`\`という表記でもPandoc単体なら動作しますが、PlantUMLの中で3.2節に示す引用を使用した場合、Markdown Preview Enhancedとの連携が正しく動作しなくなります。
@@ -201,6 +241,10 @@ Markdown Preview Enhancedを使用する場合、import機能で外部CSVファ�
 
     Bob -> Alice : hello
     ```
+
+**※2**  
+`width`を指定しても、出力フォーマットがgfm(Git Flavored Markdown)の場合は、無効化して出力します。  
+これは、AzureDevOpsというレポジトリが、対応するMarkdownの表記に対応しておらず、画像が非表示になってしまうためです。
 
 #### 3.1.5. Mermaidへの図番号の挿入
 
@@ -268,7 +312,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
 - `section`の設定値
 
-| 設置値 | 型 | デフォルト値 | 内容 |
+| 項目 | 型 | デフォルト値 | 内容 |
 |:---|:---|:---|:---|
 | auto_section | boolean | false | ヘッダーの先頭に、自動でセクション番号を追加します。 |
 | start_header_level | integer | 1 | セクション番号のカウントを開始するヘッダーのレベルを設定します。例えば2を設定した場合、ヘッダー1はセクション番号のカウントに含まれなくなります。 |
@@ -276,12 +320,12 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 | delimiter | string | “.” | セクション番号の数字の区切り文字です。 |
 | section_ref_template | array\[string\] | \[“第%s章”, “%s節”, “%s項”, “%s目”\] | 参照を引用したときの、セクション番号の文字列のテンプレートです。`%s`の中に実際のセクション番号が挿入されます。配列で複数指定することで、ヘッダーのレベルに応じてテンプレートを変更することができます。 |
 
-\[表3-1\] セクション番号の設定項目
+\[表3-2\] セクション番号の設定項目
 
 - `figure`の設定値
 
 <table>
-<caption>[表3-2] 図番号の設定項目</caption>
+<caption>[表3-3] 図番号の設定項目</caption>
 <colgroup>
 <col style="width: 25%" />
 <col style="width: 25%" />
@@ -290,7 +334,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 </colgroup>
 <thead>
 <tr>
-<th style="text-align: left;">設置値</th>
+<th style="text-align: left;">項目</th>
 <th style="text-align: left;">型</th>
 <th style="text-align: left;">デフォルト値</th>
 <th style="text-align: left;">内容</th>
@@ -325,7 +369,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 - `table`の設定値
 
 <table>
-<caption>[表3-3] 表番号の設定項目</caption>
+<caption>[表3-4] 表番号の設定項目</caption>
 <colgroup>
 <col style="width: 25%" />
 <col style="width: 25%" />
@@ -334,7 +378,7 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 </colgroup>
 <thead>
 <tr>
-<th style="text-align: left;">設置値</th>
+<th style="text-align: left;">項目</th>
 <th style="text-align: left;">型</th>
 <th style="text-align: left;">デフォルト値</th>
 <th style="text-align: left;">内容</th>
@@ -368,11 +412,11 @@ Markdownファイルの先頭に`---`で囲ったブロックを記述します�
 
 - `code_block`の設定値
 
-| 設置値 | 型 | デフォルト値 | 内容 |
+| 項目 | 型 | デフォルト値 | 内容 |
 |:---|:---|:---|:---|
 | save_dir | string | “assets” | PlantUML/Mermaidを画像出力したときの、出力先のディレクトリのパスです。 |
 
-\[表3-4\] コードブロックの設定項目
+\[表3-5\] コードブロックの設定項目
 
 ### 3.4. その他の機能
 

@@ -23,6 +23,9 @@ def prepare(doc):
     # (出力先がMarkdonwやHTML(Markdown Preview Enhancedのプレビュー)の場合、
     # リンクがうまく動作しないパターンがある)
     enable_link = doc.format == "docx"
+    # 図の幅の指定を無効にするかどうか
+    # AzureDevOpsの場合、幅の指定があると、画像が表示されないため、幅の指定を無効にするオプションを追加
+    disable_width = doc.format == "gfm"
 
     # セクション番号管理
     doc.section_cross_ref = SectionCrossRef(
@@ -34,7 +37,8 @@ def prepare(doc):
     # 図番号管理
     doc.figure_cross_ref = FigureCrossRef(
         doc.get_metadata(CONFIG_IMAGE, {}),
-        enable_link)
+        enable_link,
+        disable_width)
     # 表番号管理
     doc.table_cross_ref = TableCrossRef(
         doc.get_metadata(CONFIG_TABLE, {}),
