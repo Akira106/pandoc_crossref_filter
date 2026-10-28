@@ -38,7 +38,7 @@ class SectionCrossRef():
         self.delimiter: str = \
             config.get("delimiter", ".")
         self.section_ref_template: List[str] = \
-            config.get("section_ref_template", ["第%s章", "%s節", "%s項", "%s目"])
+            config.get("section_ref_template", ["第%s章", "%s節", "%s項"])
         self.enable_link: bool = enable_link
 
         # 現在のセクション番号
